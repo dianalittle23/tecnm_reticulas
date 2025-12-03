@@ -17,11 +17,17 @@ app.use("/api/carreras", carreraRoutes);
 app.use("/api/materias", materiaRoutes);
 
 mongoose
-  .connect("mongodb://127.0.0.1:27017/tecnm_reticulas")
+  .connect(process.env.MONGODB_URI)
   .then(() => {
     console.log("Conectado a MongoDB");
-    app.listen(3000, () => {
-      console.log("Servidor backend en http://localhost:3000");
+
+    // Puerto dinámico para Railway
+    const PORT = process.env.PORT || 3000;
+
+    app.listen(PORT, () => {
+      console.log(`Servidor backend en el puerto ${PORT}`);
     });
   })
   .catch((err) => console.error(err));
+
+
