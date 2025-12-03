@@ -1,21 +1,29 @@
-const mongoose = require("mongoose");
+const express = require("express");
+const Tec = require("../models/Tec");
 
-const TecSchema = new mongoose.Schema(
-  {
-    nombre: { type: String, required: true },
-    estado: String,
-    ciudad: String,
-    clave_interna: String,
-    oferta_carreras: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Carrera",
-      },
-    ],
-    activo: { type: Boolean, default: true },
-  },
-  { timestamps: true }
-);
+const router = express.Router();
 
-module.exports = mongoose.model("Tec", TecSchema);
+// GET /api/tecs  -> lista todos los tecnológicos desde MongoDB
+router.get("/", async (req, res) => {
+  try {
+    const tecs = await Tec.find().sort({ nombre: 1 });
+    res.json(tecs);                     //  DEVUELVE JSON
+  } catch (error) {
+    console.error("Error al obtener tecs:", error);
+    res.status(500).json({ mensaje: "Error al obtener tecs" });
+  }
+});
 
+// (opcional) crear un tec a mano
+router.post("/", async (req, res) => {
+  try {
+    const tec = new Tec(req.body);
+    await tec.save();
+    res.status(201).json(tec);
+  } catch (error) {
+    console.error("Error al crear tec:", error);
+    res.status(500).json({ mensaje: "Error al crear tec" });
+  }
+});
+
+module.exports = router;
