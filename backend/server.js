@@ -22,7 +22,7 @@ app.get("/", (req, res) => {
 
 //  Conexión a MongoDB (no bloquea el servidor)
 mongoose
-  .connect(process.env.MongoDB_MONGO_URL)
+  .connect(process.env.MongoDB_MONGODB_URL)
   .then(() => {
     console.log("Conectado a MongoDB");
   })
@@ -36,6 +36,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor backend en el puerto ${PORT}`);
 });
+
 
 
 
