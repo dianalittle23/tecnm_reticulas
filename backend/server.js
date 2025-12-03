@@ -16,7 +16,11 @@ app.use("/api/tecs", tecRoutes);
 app.use("/api/carreras", carreraRoutes);
 app.use("/api/materias", materiaRoutes);
 
-// 🔹 Conexión a MongoDB (no bloquea el servidor)
+app.get("/", (req, res) => {
+  res.send("API TECNM Retículas funcionando ✅");
+});
+
+//  Conexión a MongoDB (no bloquea el servidor)
 mongoose
   .connect(process.env.MongoDB_MONGO_URL)
   .then(() => {
@@ -32,6 +36,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor backend en el puerto ${PORT}`);
 });
+
 
 
 
