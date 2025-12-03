@@ -1,52 +1,46 @@
 const express = require("express");
-const Carrera = require("../models/Carrera");
-
 const router = express.Router();
+const Carrera = require("../models/Carrera"); // Importa el modelo que acabamos de crear
 
-/** GET todas */
+// ----------------------------------------------------------------------
+// ENDPOINT 1: OBTENER TODAS LAS CARRERAS (GET /api/carreras)
+// ----------------------------------------------------------------------
 router.get("/", async (req, res) => {
-  try {
-    const { tecId } = req.query;
-    const filtro = {};
-    if (tecId) filtro.tec = tecId;
+    console.log("Petición GET recibida para /api/carreras");
+    try {
+        // Busca TODAS las carreras en la base de datos
+        // El .find({}) sin condiciones devuelve todos los documentos
+        const carreras = await Carrera.find({});
 
-    const carreras = await Carrera.find(filtro)
-      .populate("tec", "nombre")
-      .populate("semestres.materias", "clave nombre semestre_recomendado es_modulo_especialidad")
-      .populate("especialidades.materias", "clave nombre es_modulo_especialidad");
+        // Si no hay carreras, devuelve un 404
+        if (carreras.length === 0) {
+            return res.status(404).json({ 
+                mensaje: "No se encontraron carreras.",
+                datos: []
+            });
+        }
 
-    res.json(carreras);
-  } catch (error) {
-    res.status(500).json({ mensaje: "Error al obtener carreras" });
-  }
+        // Responde con un estado 200 y la lista de carreras en formato JSON
+        res.status(200).json({
+            mensaje: "Carreras obtenidas exitosamente.",
+            total: carreras.length,
+            datos: carreras
+        });
+
+    } catch (error) {
+        // Si hay algún error en la conexión o consulta, lo capturamos
+        console.error("Error al obtener las carreras:", error);
+        res.status(500).json({ 
+            mensaje: "Error del servidor al obtener las carreras.",
+            error: error.message 
+        });
+    }
 });
 
-/** GET una sola por ID */
-router.get("/:id", async (req, res) => {
-  try {
-    const carrera = await Carrera.findById(req.params.id)
-      .populate("tec", "nombre")
-      .populate("semestres.materias", "clave nombre semestre_recomendado es_modulo_especialidad")
-      .populate("especialidades.materias", "clave nombre es_modulo_especialidad");
 
-    if (!carrera)
-      return res.status(404).json({ mensaje: "Carrera no encontrada" });
+// Puedes añadir más rutas aquí, como:
+// router.post("/", async (req, res) => { /* Crear una carrera */ });
+// router.get("/:id", async (req, res) => { /* Obtener una carrera por ID */ });
 
-    res.json(carrera);
-  } catch (error) {
-    res.status(500).json({ mensaje: "Error al obtener la carrera" });
-  }
-});
-
-/** POST */
-router.post("/", async (req, res) => {
-  try {
-    const carrera = new Carrera(req.body);
-    await carrera.save();
-    res.status(201).json(carrera);
-  } catch (error) {
-    res.status(500).json({ mensaje: "Error al crear carrera" });
-  }
-});
 
 module.exports = router;
