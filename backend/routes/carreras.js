@@ -1,46 +1,59 @@
-const express = require("express");
-const router = express.Router();
-const Carrera = require("../models/Carrera"); // Importa el modelo que acabamos de crear
+const mongoose = require("mongoose");
 
-// ----------------------------------------------------------------------
-// ENDPOINT 1: OBTENER TODAS LAS CARRERAS (GET /api/carreras)
-// ----------------------------------------------------------------------
-router.get("/", async (req, res) => {
-    console.log("Petición GET recibida para /api/carreras");
-    try {
-        // Busca TODAS las carreras en la base de datos
-        // El .find({}) sin condiciones devuelve todos los documentos
-        const carreras = await Carrera.find({});
+// Semestres de la carrera
+const SemestreSchema = new mongoose.Schema(
+  {
+    numero: { type: Number, required: true }, // 1,2,3...
+    materias: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Materia",
+      },
+    ],
+  },
+  { _id: false }
+);
 
-        // Si no hay carreras, devuelve un 404
-        if (carreras.length === 0) {
-            return res.status(404).json({ 
-                mensaje: "No se encontraron carreras.",
-                datos: []
-            });
-        }
+// Especialidades de la carrera
+const EspecialidadSchema = new mongoose.Schema(
+  {
+    nombre: { type: String, required: true },
+    descripcion: String,
+    materias: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Materia",
+      },
+    ],
+  },
+  { _id: false }
+);
 
-        // Responde con un estado 200 y la lista de carreras en formato JSON
-        res.status(200).json({
-            mensaje: "Carreras obtenidas exitosamente.",
-            total: carreras.length,
-            datos: carreras
-        });
+const CarreraSchema = new mongoose.Schema(
+  {
+    nombre: { type: String, required: true },
+    clave_oficial: { type: String, required: true },
+    grado: { type: String, default: "Licenciatura" },
+    modalidad: { type: String, default: "Escolarizada" },
+    plan_anio: Number,
+    area_conocimiento: String,
 
-    } catch (error) {
-        // Si hay algún error en la conexión o consulta, lo capturamos
-        console.error("Error al obtener las carreras:", error);
-        res.status(500).json({ 
-            mensaje: "Error del servidor al obtener las carreras.",
-            error: error.message 
-        });
-    }
-});
+    reticula_pdf_url: String,
+    perfil_pdf_url: String,
 
+    tec: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tec",
+      required: true,
+    },
 
-// Puedes añadir más rutas aquí, como:
-// router.post("/", async (req, res) => { /* Crear una carrera */ });
-// router.get("/:id", async (req, res) => { /* Obtener una carrera por ID */ });
+    semestres: [SemestreSchema],
+    especialidades: [EspecialidadSchema],
 
+    activo: { type: Boolean, default: true },
+  },
+  { timestamps: true }
+);
 
-module.exports = router;
+module.exports = mongoose.model("Carrera", CarreraSchema);
+
