@@ -1,59 +1,52 @@
-const mongoose = require("mongoose");
+const express = require("express");
+const Carrera = require("../models/Carrera");
 
-// Semestres de la carrera
-const SemestreSchema = new mongoose.Schema(
-  {
-    numero: { type: Number, required: true }, // 1,2,3...
-    materias: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Materia",
-      },
-    ],
-  },
-  { _id: false }
-);
+const router = express.Router();
 
-// Especialidades de la carrera
-const EspecialidadSchema = new mongoose.Schema(
-  {
-    nombre: { type: String, required: true },
-    descripcion: String,
-    materias: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Materia",
-      },
-    ],
-  },
-  { _id: false }
-);
+/** GET todas */
+router.get("/", async (req, res) => {
+  try {
+    const { tecId } = req.query;
+    const filtro = {};
+    if (tecId) filtro.tec = tecId;
 
-const CarreraSchema = new mongoose.Schema(
-  {
-    nombre: { type: String, required: true },
-    clave_oficial: { type: String, required: true },
-    grado: { type: String, default: "Licenciatura" },
-    modalidad: { type: String, default: "Escolarizada" },
-    plan_anio: Number,
-    area_conocimiento: String,
+    const carreras = await Carrera.find(filtro)
+      .populate("tec", "nombre")
+      .populate("semestres.materias", "clave nombre semestre_recomendado es_modulo_especialidad")
+      .populate("especialidades.materias", "clave nombre es_modulo_especialidad");
 
-    reticula_pdf_url: String,
-    perfil_pdf_url: String,
+    res.json(carreras);
+  } catch (error) {
+    res.status(500).json({ mensaje: "Error al obtener carreras" });
+  }
+});
 
-    tec: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Tec",
-      required: true,
-    },
+/** GET una sola por ID */
+router.get("/:id", async (req, res) => {
+  try {
+    const carrera = await Carrera.findById(req.params.id)
+      .populate("tec", "nombre")
+      .populate("semestres.materias", "clave nombre semestre_recomendado es_modulo_especialidad")
+      .populate("especialidades.materias", "clave nombre es_modulo_especialidad");
 
-    semestres: [SemestreSchema],
-    especialidades: [EspecialidadSchema],
+    if (!carrera)
+      return res.status(404).json({ mensaje: "Carrera no encontrada" });
 
-    activo: { type: Boolean, default: true },
-  },
-  { timestamps: true }
-);
+    res.json(carrera);
+  } catch (error) {
+    res.status(500).json({ mensaje: "Error al obtener la carrera" });
+  }
+});
 
-module.exports = mongoose.model("Carrera", CarreraSchema);
+/** POST */
+router.post("/", async (req, res) => {
+  try {
+    const carrera = new Carrera(req.body);
+    await carrera.save();
+    res.status(201).json(carrera);
+  } catch (error) {
+    res.status(500).json({ mensaje: "Error al crear carrera" });
+  }
+});
 
+module.exports = router;
