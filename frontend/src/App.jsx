@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import axios from "axios";
 import "./App.css";
+import { API_URL } from "./config.js";
 
-const API_BASE = "http://localhost:3000/api";
+const API_BASE = `${API_URL}/api`;
+
 
 function App() {
   const [tecs, setTecs] = useState([]);
