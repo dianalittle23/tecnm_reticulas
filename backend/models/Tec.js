@@ -1,20 +1,24 @@
 const mongoose = require("mongoose");
 
-const TecSchema = new mongoose.Schema(
-  {
-    nombre: { type: String, required: true },
-    estado: String,
-    ciudad: String,
-    clave_interna: String,
-    oferta_carreras: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Carrera",
-      },
-    ],
-    activo: { type: Boolean, default: true },
-  },
-  { timestamps: true }
-);
+// Define un esquema muy simple para el Tecnológico
+const TecnologicoSchema = new mongoose.Schema({
+    nombre: {
+        type: String,
+        required: [true, "El nombre del Tecnológico es obligatorio"],
+        trim: true,
+        unique: true
+    },
+    clave: {
+        type: String,
+        required: [true, "La clave del Tecnológico es obligatoria"],
+        unique: true,
+        trim: true
+    },
+    // Dirección, opcional por ahora
+    direccion: {
+        type: String,
+        required: false
+    }
+});
 
-module.exports = mongoose.model("Tec", TecSchema);
+module.exports = mongoose.model("Tecnologico", TecnologicoSchema);
