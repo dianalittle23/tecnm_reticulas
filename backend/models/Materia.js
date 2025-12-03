@@ -1,44 +1,71 @@
 const mongoose = require("mongoose");
 
-// Define el esquema (estructura) de una Materia
-const MateriaSchema = new mongoose.Schema({
-    // Nombre de la materia (ej: Programación Orientada a Objetos)
-    nombre: {
-        type: String,
-        required: [true, "El nombre de la materia es obligatorio"],
-        trim: true,
-    },
-    // Clave de la materia (ej: ISC-1027)
-    clave: {
-        type: String,
-        required: [true, "La clave de la materia es obligatoria"],
-        unique: true, // Cada clave debe ser única en todo el sistema
-        trim: true
-    },
-    // Créditos totales de la materia
-    creditos: {
-        type: Number,
-        required: [true, "El número de créditos es obligatorio"],
-        min: 1 // Asegura que los créditos sean al menos 1
-    },
-    // Semestre al que pertenece (ej: 1, 2, 3...)
-    semestre: {
-        type: Number,
-        required: [true, "El semestre es obligatorio"],
-        min: 1
-    },
-    // RELACIÓN CLAVE: ID de la Carrera a la que pertenece esta materia
-    idCarrera: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Carrera', // Referencia al modelo 'Carrera' que ya creaste
-        required: [true, "La materia debe estar asociada a una Carrera"]
-    },
-    
-    createdAt: {
-        type: Date,
-        default: Date.now,
-    },
-});
+const MateriaSchema = new mongoose.Schema(
+  {
+    clave: { type: String, required: true },
+    nombre: { type: String, required: true },
 
-// Crea y exporta el Modelo de Mongoose
+    creditos: Number,
+    horas_teoria: Number,
+    horas_practica: Number,
+    cadena_creditos: String,
+    semestre_recomendado: Number,
+
+    es_modulo_especialidad: { type: Boolean, default: false },
+    nombre_especialidad: String,
+
+    tipo_unidad: {
+      type: String,
+      enum: [
+        "Curso",
+        "Taller",
+        "Laboratorio",
+        "Residencia",
+        "Servicio Social",
+        "Actividad complementaria",
+        "Otro",
+      ],
+      default: "Curso",
+    },
+
+    area_materia: {
+      type: String,
+      enum: ["Basica", "Disciplinar", "Terminal", "Especialidad", "Otro"],
+      default: "Basica",
+    },
+
+    carrera: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Carrera",
+      required: true,
+    },
+
+    tec: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tec",
+      required: true,
+    },
+
+    // LISTA de materias que son PRERREQUISITOS
+    prerrequisitos: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Materia",
+      },
+    ],
+
+    tags: [String],
+    competencias: [String],
+
+    plan_anio: Number,
+    creditos_optativos: { type: Boolean, default: false },
+    observaciones: String,
+
+    fuente: String,
+    activo: { type: Boolean, default: true },
+  },
+  { timestamps: true }
+);
+
 module.exports = mongoose.model("Materia", MateriaSchema);
+
