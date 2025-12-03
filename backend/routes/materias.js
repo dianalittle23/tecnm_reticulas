@@ -1,82 +1,71 @@
-const express = require("express");
-const router = express.Router();
-const Materia = require("../models/Materia"); // Importa el modelo Materia
-const Carrera = require("../models/Carrera"); // Necesario para validar la ID de Carrera
+const mongoose = require("mongoose");
 
-// ----------------------------------------------------------------------
-// ENDPOINT 1: CREAR UNA NUEVA MATERIA (POST /api/materias)
-// ----------------------------------------------------------------------
-router.post("/", async (req, res) => {
-    console.log("Petición POST recibida para /api/materias con datos:", req.body);
-    
-    const nuevaMateria = req.body;
+const MateriaSchema = new mongoose.Schema(
+  {
+    clave: { type: String, required: true },
+    nombre: { type: String, required: true },
 
-    try {
-        // 1. VALIDACIÓN: Verificar que el idCarrera proporcionado exista
-        const carreraExistente = await Carrera.findById(nuevaMateria.idCarrera);
+    creditos: Number,
+    horas_teoria: Number,
+    horas_practica: Number,
+    cadena_creditos: String,
+    semestre_recomendado: Number,
 
-        if (!carreraExistente) {
-            return res.status(404).json({
-                mensaje: "Error de validación: La ID de Carrera proporcionada no existe.",
-            });
-        }
+    es_modulo_especialidad: { type: Boolean, default: false },
+    nombre_especialidad: String,
 
-        // 2. Creación y Guardado
-        const materiaCreada = new Materia(nuevaMateria);
-        await materiaCreada.save();
+    tipo_unidad: {
+      type: String,
+      enum: [
+        "Curso",
+        "Taller",
+        "Laboratorio",
+        "Residencia",
+        "Servicio Social",
+        "Actividad complementaria",
+        "Otro",
+      ],
+      default: "Curso",
+    },
 
-        // 3. Respuesta exitosa (201 Created)
-        res.status(201).json({
-            mensaje: "Materia creada y asociada exitosamente.",
-            datos: materiaCreada
-        });
+    area_materia: {
+      type: String,
+      enum: ["Basica", "Disciplinar", "Terminal", "Especialidad", "Otro"],
+      default: "Basica",
+    },
 
-    } catch (error) {
-        // Manejo de errores de Mongoose
-        let statusCode = 500;
-        let mensajeError = "Error interno del servidor al crear la materia.";
+    carrera: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Carrera",
+      required: true,
+    },
 
-        if (error.name === 'ValidationError') {
-            statusCode = 400; // Bad Request
-            mensajeError = `Datos de entrada inválidos o incompletos: ${error.message}`;
-        } else if (error.code === 11000) {
-            statusCode = 409; // Conflict
-            mensajeError = "Ya existe una materia con esa clave.";
-        } else if (error.name === 'CastError' && error.path === 'idCarrera') {
-            statusCode = 400; // Bad Request
-            mensajeError = "La ID de Carrera proporcionada no tiene el formato correcto (ObjectId).";
-        }
+    tec: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tec",
+      required: true,
+    },
 
-        console.error("Error al crear materia:", error);
-        res.status(statusCode).json({ 
-            mensaje: mensajeError,
-            error: error.message 
-        });
-    }
-});
+    // LISTA de materias que son PRERREQUISITOS
+    prerrequisitos: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Materia",
+      },
+    ],
 
-// ----------------------------------------------------------------------
-// ENDPOINT 2: OBTENER TODAS LAS MATERIAS (GET /api/materias)
-// ----------------------------------------------------------------------
-router.get("/", async (req, res) => {
-    try {
-        // Obtiene todas las materias, y con .populate('idCarrera') automáticamente
-        // incluye el objeto de la carrera relacionada en lugar solo de la ID.
-        const materias = await Materia.find({}).populate('idCarrera');
+    tags: [String],
+    competencias: [String],
 
-        res.status(200).json({
-            mensaje: "Lista de materias obtenida exitosamente.",
-            total: materias.length,
-            datos: materias
-        });
-    } catch (error) {
-        console.error("Error al obtener materias:", error);
-        res.status(500).json({ 
-            mensaje: "Error del servidor al obtener las materias.",
-            error: error.message 
-        });
-    }
-});
+    plan_anio: Number,
+    creditos_optativos: { type: Boolean, default: false },
+    observaciones: String,
 
+    fuente: String,
+    activo: { type: Boolean, default: true },
+  },
+  { timestamps: true }
+);
 
-module.exports = router;
+module.exports = mongoose.model("Materia", MateriaSchema);
+
