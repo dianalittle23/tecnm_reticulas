@@ -17,7 +17,7 @@ app.use("/api/carreras", carreraRoutes);
 app.use("/api/materias", materiaRoutes);
 
 mongoose
-  .connect(process.env.MONGODB_URI)
+  .connect(process.env.MongoDB_MONGO_URL)
   .then(() => {
     console.log("Conectado a MongoDB");
 
@@ -29,6 +29,7 @@ mongoose
     });
   })
   .catch((err) => console.error(err));
+
 
 
 
