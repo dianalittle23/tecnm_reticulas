@@ -17,12 +17,14 @@ app.use("/api/carreras", carreraRoutes);
 app.use("/api/materias", materiaRoutes);
 
 app.get("/", (req, res) => {
-  res.send("API TECNM Retículas funcionando ✅");
+  res.send("API TECNM Retículas funcionando ");
 });
 
 //  Conexión a MongoDB (no bloquea el servidor)
 mongoose
-  .connect(process.env.MONGODB_URL)
+  .connect(process.env.MONGODB_URL, {
+    dbName: 'tecnm_reticulas', // <-- aquí le dices qué base de datos usar
+  })
   .then(() => {
     console.log("Conectado a MongoDB");
   })
@@ -30,12 +32,6 @@ mongoose
     console.error("Error conectando a MongoDB:", err);
   });
 
-// 🔹 Puerto dinámico para Railway
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log(`Servidor backend en el puerto ${PORT}`);
-});
 
 
 
