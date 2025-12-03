@@ -1,18 +1,21 @@
-const express = require("express");
-const router = express.Router();
+const mongoose = require("mongoose");
 
-// ----------------------------------------------------------------------
-// RUTA DE EJEMPLO: OBTENER TODOS LOS TECNOLÓGICOS (GET /api/tecs)
-// Nota: Aquí no hay lógica de Mongoose todavía, solo es un placeholder
-// para que el servidor no falle al inicio.
-// ----------------------------------------------------------------------
-router.get("/", (req, res) => {
-    res.status(200).json({
-        mensaje: "Ruta /api/tecs funcionando. Debes implementar el modelo y la lógica de base de datos aquí.",
-        datos: []
-    });
-});
+const TecSchema = new mongoose.Schema(
+  {
+    nombre: { type: String, required: true },
+    estado: String,
+    ciudad: String,
+    clave_interna: String,
+    oferta_carreras: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Carrera",
+      },
+    ],
+    activo: { type: Boolean, default: true },
+  },
+  { timestamps: true }
+);
 
-
-module.exports = router;
+module.exports = mongoose.model("Tec", TecSchema);
 
