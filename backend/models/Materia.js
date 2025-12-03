@@ -42,8 +42,3 @@ const MateriaSchema = new mongoose.Schema({
 
 // Crea y exporta el Modelo de Mongoose
 module.exports = mongoose.model("Materia", MateriaSchema);
-  { timestamps: true }
-);
-
-module.exports = mongoose.model("Materia", MateriaSchema);
-
