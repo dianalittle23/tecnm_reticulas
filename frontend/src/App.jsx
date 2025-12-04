@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
+import { API_URL } from "./config";
+
 
 // === CONFIGURACIÓN Y UTILIDADES CONSOLIDADAS ===
 
 // URL BASE (se asume una URL mock para la compilación, debe ser reemplazada por tu API real)
-const API_BASE = 'https://mock-tecnm-api.dev/api'; 
+const API_BASE = `${API_URL}/api`;
 
 // Función para reemplazar axios.get con fetch nativo.
 // Nota: Esta función hará llamadas reales a 'API_BASE'. Sin un backend funcional, las listas aparecerán vacías.
