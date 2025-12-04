@@ -1,69 +1,50 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors"); // Importado para manejar las peticiones de origen cruzado
-
-// Asegúrate de que estas rutas existan en tu proyecto
-const tecRoutes = require("./routes/tecs");
-const carreraRoutes = require("./routes/carreras");
-const materiaRoutes = require("./routes/materias");
-
+// Asumiendo que usas Express
+const express = require('express');
+const cors = require('cors'); // Asegúrate de instalar 'npm install cors'
 const app = express();
 
-// --- 1. CONFIGURACIÓN DE CORS (SOLUCIÓN AL ERROR) ---
+// ----------------------------------------------------
+// 1. Configuración de CORS
+// ----------------------------------------------------
 
-// Define el origen permitido. Esta es la URL de tu Frontend en Railway.
+// Define una lista de orígenes permitidos (Whitelist)
+// Esto es CRUCIAL para producción. Debes incluir la URL de tu frontend.
 const allowedOrigins = [
-  "https://dependable-creation-production.up.railway.app", // ¡URL de tu Frontend!
-  "http://localhost:3000" // Permite el acceso para pruebas locales
+    'https://dependable-creation-production.up.railway.app', // <-- ¡TU FRONTEND!
+    'https://tecnmreticulas-production.up.railway.app', // (Opcional, si tu API se consume a sí misma)
+    // Agrega cualquier otra URL donde despliegues tu frontend
 ];
 
-// Configura CORS para aceptar solo solicitudes de los orígenes definidos.
-app.use(cors({
-  origin: function (origin, callback) {
-    // Permite solicitudes sin origen (como Postman o curl)
-    if (!origin) return callback(null, true);
-    
-    // Si el origen está en nuestra lista, permitirlo
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      // Bloquea cualquier otro dominio (seguridad)
-      callback(new Error('Not allowed by CORS'), false);
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], 
-  credentials: true 
-}));
+const corsOptions = {
+    origin: (origin, callback) => {
+        // Permite la conexión si:
+        // 1. El origen está en la lista blanca (allowedOrigins).
+        // 2. No hay origen (p.ej., si la petición viene del mismo servidor o herramientas como Postman).
+        if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+            callback(null, true);
+        } else {
+            // Reemplaza new Error() por un manejo de error real para no mostrarlo al usuario
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Métodos HTTP permitidos
+    credentials: true, // Para permitir cookies, encabezados de autorización, etc.
+};
 
-// --- Middleware General ---
+// Usa el middleware CORS con tus opciones
+app.use(cors(corsOptions));
+
+// ----------------------------------------------------
+// 2. Resto de la configuración del servidor
+// ----------------------------------------------------
+// Middleware para parsear JSON
 app.use(express.json());
 
-// --- Rutas API ---
-app.use("/api/tecs", tecRoutes);
-app.use("/api/carreras", carreraRoutes);
-app.use("/api/materias", materiaRoutes);
+// Tus rutas aquí...
+// app.use('/api', tusRutas);
 
-app.get("/", (req, res) => {
-  res.send("API TECNM Retículas funcionando 🚀");
-});
-
-
-// --- Conexión a MongoDB ---
-mongoose
-  .connect(process.env.MONGODB_URL, {
-    dbName: 'tecnm_reticulas',
-  })
-  .then(() => {
-    console.log("Conectado a MongoDB");
-  })
-  .catch((err) => {
-    console.error("Error conectando a MongoDB:", err);
-  });
-
-
-// --- Inicialización del Servidor ---
-const port = process.env.PORT || 8080;
-
-app.listen(port, () => {
-  console.log(`Servidor escuchando en el puerto ${port}`);
+// Configuración del puerto y el inicio del servidor
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+    console.log(`Servidor escuchando en el puerto ${PORT}`);
 });
