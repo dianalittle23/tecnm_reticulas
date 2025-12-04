@@ -489,8 +489,44 @@ body {
   );
   white-space: nowrap;
 }
+/* ===== GRID DE GRÁFICAS (tipo dashboard) ===== */
 
-.barra-value {
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 18px;
+  margin-top: 10px;
+}
+
+.chart-card {
+  background: radial-gradient(circle at top left, rgba(130, 46, 180, 0.22) 0, #10142b 45%);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 12px 14px 10px;
+}
+
+.chart-card h3 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f8f7ff;
+}
+
+.chart-subtitle {
+  margin: 0 0 8px;
+  font-size: 0.78rem;
+  color: var(--text-soft);
+}
+
+/* Ajuste para los tooltips de Recharts (que no rompan el diseño) */
+.recharts-default-tooltip {
   font-size: 0.8rem;
-  color: #ffffff;
+}
+
+/* En pantallas pequeñas, una sola columna de charts */
+@media (max-width: 900px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
 }

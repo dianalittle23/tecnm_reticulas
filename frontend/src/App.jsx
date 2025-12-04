@@ -1,301 +1,39 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
+import { API_URL } from "./config";
+import "./App.css";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
 
-// === CONFIGURACIÓN Y UTILIDADES CONSOLIDADAS ===
+// URL BASE  backend en Railway
+const API_BASE = `${API_URL}/api`;
 
-// URL BASE (se asume una URL mock para la compilación, debe ser reemplazada por tu API real)
-const API_BASE = 'https://mock-tecnm-api.dev/api'; 
-
-// Función para reemplazar axios.get con fetch nativo.
-// Nota: Esta función hará llamadas reales a 'API_BASE'. Sin un backend funcional, las listas aparecerán vacías.
+// Utilidad para llamar a la API
 const fetchJson = async (url, params = {}) => {
   const query = new URLSearchParams(params).toString();
   const fullUrl = query ? `${url}?${query}` : url;
-  
+
   try {
     const response = await fetch(fullUrl);
     if (!response.ok) {
       console.error(`Error al obtener datos de ${fullUrl}: ${response.status}`);
-      return []; // Devuelve array vacío en caso de error HTTP
+      return [];
     }
     return response.json();
   } catch (e) {
     console.error(`Error de red al llamar a ${fullUrl}:`, e);
-    return []; // Devuelve array vacío en caso de error de red
+    return [];
   }
 };
 
-// Estilos consolidados (Tailwind y CSS básico)
-const styles = `
-.app {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-.app-header {
-  background: linear-gradient(135deg, #0f172a, #1e3a8a);
-  color: white;
-  padding: 30px;
-  border-radius: 12px;
-  margin-bottom: 30px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-.header-title h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin: 0;
-}
-.header-title p {
-  opacity: 0.9;
-  font-size: 1.1rem;
-}
-
-.filters-card, .reticula-section, .tabla-section, .grafica-section {
-  background-color: #f8fafc;
-  padding: 25px;
-  border-radius: 12px;
-  margin-bottom: 25px;
-  border: 1px solid #e2e8f0;
-}
-
-.section-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1e3a8a;
-  border-bottom: 2px solid #93c5fd;
-  padding-bottom: 10px;
-  margin-bottom: 20px;
-}
-
-.filters-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-}
-.field label {
-  display: block;
-  margin-bottom: 5px;
-  font-size: 0.9rem;
-  color: #475569;
-}
-.field select, .field input[type="text"] {
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  transition: border-color 0.3s;
-}
-.field select:focus, .field input[type="text"]:focus {
-  border-color: #3b82f6;
-  outline: none;
-}
-.field-checkbox .checkbox-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.field-checkbox input[type="checkbox"] {
-  width: auto;
-}
-
-.campos-grafico input {
-  margin-top: 5px;
-}
-
-.botones-filtros {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.primary-button {
-  padding: 10px 15px;
-  background-color: #1e3a8a;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background-color 0.3s, transform 0.1s;
-}
-.primary-button:hover {
-  background-color: #254b9d;
-}
-.primary-button:active {
-  transform: scale(0.98);
-}
-
-/* RESUMEN CARRERA */
-.career-summary-card {
-  background-color: #e0f2fe;
-  padding: 20px;
-  border-radius: 10px;
-  margin-bottom: 25px;
-  border-left: 5px solid #3b82f6;
-}
-.career-summary-card h2 {
-  font-size: 1.8rem;
-  color: #1e3a8a;
-  margin-top: 0;
-  margin-bottom: 10px;
-}
-.career-summary-tags {
-  display: flex;
-  gap: 20px;
-  font-size: 0.9rem;
-}
-.career-summary-tags strong {
-  color: #1e3a8a;
-}
-
-/* RETÍCULA */
-.reticula-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.semestres-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-}
-.semestre-card {
-  background-color: white;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e2e8f0;
-}
-.semestre-title {
-  font-size: 1.25rem;
-  color: #1e40af;
-  margin-top: 0;
-  border-bottom: 1px dashed #bfdbfe;
-  padding-bottom: 8px;
-  margin-bottom: 10px;
-  font-weight: 600;
-}
-.materias-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.materia-item {
-  border-bottom: 1px dotted #e5e7eb;
-  padding: 10px 0;
-}
-.materia-item:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-.materia-header {
-  display: flex;
-  justify-content: space-between;
-  font-weight: 600;
-}
-.materia-clave {
-  color: #475569;
-  font-size: 0.8rem;
-}
-.materia-nombre {
-  color: #1e3a8a;
-  font-size: 0.95rem;
-}
-.materia-detalles {
-  font-size: 0.8rem;
-  color: #64748b;
-  margin-top: 3px;
-}
-.materia-prerreq {
-  font-size: 0.75rem;
-  color: #94a3b8;
-  margin-top: 3px;
-}
-.especialidad-section {
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 2px solid #bfdbfe;
-}
-.especialidad-title {
-  font-size: 1.1rem;
-  color: #1e40af;
-  margin-top: 15px;
-  margin-bottom: 10px;
-  padding-left: 10px;
-  border-left: 4px solid #3b82f6;
-}
-
-/* TABLA */
-.tabla-wrapper {
-  overflow-x: auto;
-}
-.result-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 800px;
-}
-.result-table th, .result-table td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid #e2e8f0;
-}
-.result-table th {
-  background-color: #e2e8f0;
-  color: #1e3a8a;
-  font-weight: 700;
-  text-transform: uppercase;
-  font-size: 0.75rem;
-}
-.result-table tr:hover {
-  background-color: #f1f5f9;
-}
-.empty-text {
-  text-align: center;
-  padding: 20px;
-  color: #64748b;
-  font-style: italic;
-}
-
-/* GRÁFICA */
-.grafica-barras {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  padding: 10px;
-}
-.barra-row {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-.barra-label {
-  width: 120px; /* Ancho fijo para las etiquetas */
-  font-weight: 500;
-  font-size: 0.9rem;
-  color: #1e3a8a;
-}
-.barra-track {
-  flex-grow: 1;
-  background-color: #e0f2fe;
-  height: 25px;
-  border-radius: 4px;
-  overflow: hidden;
-}
-.barra-fill {
-  background-color: #3b82f6;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  padding-left: 10px;
-  color: white;
-  font-size: 0.8rem;
-  font-weight: 700;
-  transition: width 0.5s ease-out;
-}
-`;
-// =============================================================
-
-
 function App() {
-  // Se ha importado useRef, useMemo, useState, y useEffect arriba.
   const [tecs, setTecs] = useState([]);
   const [carreras, setCarreras] = useState([]);
   const [materias, setMaterias] = useState([]);
@@ -309,7 +47,7 @@ function App() {
 
   const [reticulaMaterias, setReticulaMaterias] = useState([]);
 
-  // Materias para gráfico
+  // Materias para gráfico 1
   const [graficoMateria1, setGraficoMateria1] = useState("");
   const [graficoMateria2, setGraficoMateria2] = useState("");
   const [graficoMateria3, setGraficoMateria3] = useState("");
@@ -322,7 +60,6 @@ function App() {
 
   // Cargar tecs al iniciar
   useEffect(() => {
-    // Usamos fetchJson en lugar de axios.get
     fetchJson(`${API_BASE}/tecs`).then((data) => setTecs(data));
   }, []);
 
@@ -333,11 +70,12 @@ function App() {
       setFiltroCarrera("");
       return;
     }
-    // Usamos fetchJson en lugar de axios.get
-    fetchJson(`${API_BASE}/carreras`, { tecId: filtroTec }).then((data) => setCarreras(data));
+    fetchJson(`${API_BASE}/carreras`, { tecId: filtroTec }).then((data) =>
+      setCarreras(data)
+    );
   }, [filtroTec]);
 
-  // === CÁLCULO DEL GRÁFICO (usa las materias ya buscadas) ===
+  // === CÁLCULO DEL GRÁFICO 1: materias compartidas entre carreras ===
   const calcularGrafico = (materiasBase) => {
     const base = materiasBase || materias;
 
@@ -350,21 +88,26 @@ function App() {
       return;
     }
 
-    // conjunto de carreras distintas en los resultados actuales
-    const carrerasSet = new Set(
+    // Carreras distintas presentes en los resultados actuales
+    const carrerasTotales = new Set(
       base.map((m) => m.carrera?.nombre).filter(Boolean)
     );
-    const totalCarreras = carrerasSet.size || 1;
+    const totalCarreras = carrerasTotales.size || 1;
 
     const datos = nombres.map((nom) => {
-      const carrerasConMateria = new Set(
-        base
-          .filter((m) =>
-            (m.nombre || "").toLowerCase().includes(nom.toLowerCase())
-          )
-          .map((m) => m.carrera?.nombre)
-          .filter(Boolean)
-      );
+      const carrerasConMateria = new Set();
+
+      base.forEach((m) => {
+        const nombreMateria = (m.nombre || "").toLowerCase();
+        const textoBuscado = nom.toLowerCase().trim();
+
+        // contiene por nombre de materia
+        if (nombreMateria.includes(textoBuscado)) {
+          if (m.carrera?.nombre) {
+            carrerasConMateria.add(m.carrera.nombre);
+          }
+        }
+      });
 
       const count = carrerasConMateria.size;
       const porcentaje = (count / totalCarreras) * 100;
@@ -389,14 +132,10 @@ function App() {
     if (filtroClave) params.clave = filtroClave;
     if (soloEspecialidad) params.soloEspecialidad = true;
 
-    // Usamos fetchJson en lugar de axios.get
     fetchJson(`${API_BASE}/materias`, params).then((data) => {
       setMaterias(data);
+      calcularGrafico(data); // actualiza la gráfica 1 con los nuevos resultados
 
-      // recalcula gráfico con la nueva búsqueda
-      calcularGrafico(data);
-
-      // scroll hacia la tabla
       if (tablaRef.current) {
         tablaRef.current.scrollIntoView({
           behavior: "smooth",
@@ -407,7 +146,6 @@ function App() {
   };
 
   const handleVerGrafico = () => {
-    // recalcula con los nombres actuales (por si los cambiaste)
     calcularGrafico();
     if (graficoRef.current) {
       graficoRef.current.scrollIntoView({
@@ -427,7 +165,6 @@ function App() {
     const params = { carreraId: filtroCarrera };
     if (filtroTec) params.tecId = filtroTec;
 
-    // Usamos fetchJson en lugar de axios.get
     fetchJson(`${API_BASE}/materias`, params).then((data) => {
       setReticulaMaterias(data);
     });
@@ -452,7 +189,7 @@ function App() {
     [carreras, filtroCarrera]
   );
 
-  // Materias por semestre (tronco común)
+  // Materias por semestre (tronco común) para retícula
   const materiasPorSemestre = useMemo(() => {
     const grupos = {};
     reticulaMaterias
@@ -482,6 +219,39 @@ function App() {
     return map;
   }, [materiasEspecialidad]);
 
+  // Datos para gráfica 2: créditos totales por semestre (según la tabla actual)
+  const datosCreditosPorSemestre = useMemo(() => {
+    if (!materias.length) return [];
+    const map = {};
+    materias.forEach((m) => {
+      const sem = m.semestre_recomendado ?? "Sin semestre";
+      const clave = isNaN(Number(sem)) ? String(sem) : Number(sem);
+      const creditos = Number(m.creditos) || 0;
+      map[clave] = (map[clave] || 0) + creditos;
+    });
+
+    return Object.entries(map)
+      .sort(([a], [b]) => Number(a) - Number(b))
+      .map(([semestre, totalCreditos]) => ({
+        semestre: String(semestre),
+        totalCreditos,
+      }));
+  }, [materias]);
+
+  // Datos para gráfica 3: número de materias por estado (según la tabla actual)
+  const datosMateriasPorEstado = useMemo(() => {
+    if (!materias.length) return [];
+    const map = {};
+    materias.forEach((m) => {
+      const estado = m.tec?.estado || "Sin estado";
+      map[estado] = (map[estado] || 0) + 1;
+    });
+
+    return Object.entries(map)
+      .sort(([, a], [, b]) => b - a)
+      .map(([estado, totalMaterias]) => ({ estado, totalMaterias }));
+  }, [materias]);
+
   // Scroll a especialidad cuando se marca la casilla
   useEffect(() => {
     if (soloEspecialidad) {
@@ -493,260 +263,223 @@ function App() {
   }, [soloEspecialidad]);
 
   return (
-    // Estilos CSS inyectados para que la aplicación se vea correctamente
-    <>
-      <style>{styles}</style> 
-      <div className="app">
-        {/* ENCABEZADO */}
-        <header className="app-header">
-          <div className="header-title">
-            <h1>Retículas TecNM</h1>
-            <p>Consulta de planes de estudio por estado, plantel y carrera</p>
+    <div className="app">
+      {/* ENCABEZADO */}
+      <header className="app-header">
+        <div className="header-title">
+          <h1>Retículas TecNM</h1>
+          <p>Consulta de planes de estudio por estado, plantel y carrera</p>
+        </div>
+      </header>
+
+      {/* TARJETA DE FILTROS */}
+      <section className="filters-card">
+        <h2 className="section-title">Filtros de búsqueda</h2>
+        <div className="filters-grid">
+          {/* ESTADO */}
+          <div className="field">
+            <label>
+              <strong>Estado</strong>
+            </label>
+            <select
+              value={filtroEstado}
+              onChange={(e) => {
+                const nuevoEstado = e.target.value;
+                setFiltroEstado(nuevoEstado);
+                setFiltroTec("");
+                setFiltroCarrera("");
+              }}
+            >
+              <option value="">Todos</option>
+              {estados.map((est) => (
+                <option key={est} value={est}>
+                  {est}
+                </option>
+              ))}
+            </select>
           </div>
-        </header>
 
-        {/* TARJETA DE FILTROS */}
-        <section className="filters-card">
-          <h2 className="section-title">Filtros de búsqueda</h2>
-          <div className="filters-grid">
-            {/* ESTADO */}
-            <div className="field">
-              <label>
-                <strong>Estado</strong>
-              </label>
-              <select
-                value={filtroEstado}
-                onChange={(e) => {
-                  const nuevoEstado = e.target.value;
-                  setFiltroEstado(nuevoEstado);
-                  setFiltroTec("");
-                  setFiltroCarrera("");
-                }}
-              >
-                <option value="">Todos</option>
-                {estados.map((est) => (
-                  <option key={est} value={est}>
-                    {est}
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* TECNOLÓGICO */}
+          <div className="field">
+            <label>
+              <strong>Tecnológico</strong>
+            </label>
+            <select
+              value={filtroTec}
+              onChange={(e) => {
+                setFiltroTec(e.target.value);
+                setFiltroCarrera("");
+              }}
+            >
+              <option value="">Todos</option>
+              {tecsFiltrados.map((t) => (
+                <option key={t._id} value={t._id}>
+                  {t.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
 
-            {/* TECNOLÓGICO */}
-            <div className="field">
-              <label>
-                <strong>Tecnológico</strong>
-              </label>
-              <select
-                value={filtroTec}
-                onChange={(e) => {
-                  setFiltroTec(e.target.value);
-                  setFiltroCarrera("");
-                }}
-              >
-                <option value="">Todos</option>
-                {tecsFiltrados.map((t) => (
-                  <option key={t._id} value={t._id}>
-                    {t.nombre}
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* CARRERA */}
+          <div className="field">
+            <label>
+              <strong>Carrera</strong>
+            </label>
+            <select
+              value={filtroCarrera}
+              onChange={(e) => setFiltroCarrera(e.target.value)}
+            >
+              <option value="">Todas</option>
+              {carreras.map((c) => (
+                <option key={c._id} value={c._id}>
+                  {c.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
 
-            {/* CARRERA */}
-            <div className="field">
-              <label>
-                <strong>Carrera</strong>
-              </label>
-              <select
-                value={filtroCarrera}
-                onChange={(e) => setFiltroCarrera(e.target.value)}
-              >
-                <option value="">Todas</option>
-                {carreras.map((c) => (
-                  <option key={c._id} value={c._id}>
-                    {c.nombre}
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* NOMBRE DE MATERIA */}
+          <div className="field">
+            <label>
+              <strong>Nombre de materia</strong>
+            </label>
+            <input
+              type="text"
+              value={filtroNombre}
+              onChange={(e) => setFiltroNombre(e.target.value)}
+              placeholder="Ej. Cálculo, Programación..."
+            />
+          </div>
 
-            {/* NOMBRE DE MATERIA */}
-            <div className="field">
-              <label>
-                <strong>Nombre de materia</strong>
-              </label>
+          {/* CLAVE */}
+          <div className="field">
+            <label>
+              <strong>Clave</strong>
+            </label>
+            <input
+              type="text"
+              value={filtroClave}
+              onChange={(e) => setFiltroClave(e.target.value)}
+              placeholder="Ej. ACF-0901"
+            />
+          </div>
+
+          {/* SOLO ESPECIALIDAD */}
+          <div className="field field-checkbox">
+            <label>
+              <strong>Solo especialidad</strong>
+            </label>
+            <div className="checkbox-row">
               <input
-                type="text"
-                value={filtroNombre}
-                onChange={(e) => setFiltroNombre(e.target.value)}
-                placeholder="Ej. Cálculo, Programación..."
+                type="checkbox"
+                checked={soloEspecialidad}
+                onChange={(e) => setSoloEspecialidad(e.target.checked)}
               />
-            </div>
-
-            {/* CLAVE */}
-            <div className="field">
-              <label>
-                <strong>Clave</strong>
-              </label>
-              <input
-                type="text"
-                value={filtroClave}
-                onChange={(e) => setFiltroClave(e.target.value)}
-                placeholder="Ej. ACF-0901"
-              />
-            </div>
-
-            {/* SOLO ESPECIALIDAD */}
-            <div className="field field-checkbox">
-              <label>
-                <strong>Solo especialidad</strong>
-              </label>
-              <div className="checkbox-row">
-                <input
-                  type="checkbox"
-                  checked={soloEspecialidad}
-                  onChange={(e) => setSoloEspecialidad(e.target.checked)}
-                />
-                <span>Mostrar solo módulos de especialidad</span>
-              </div>
-            </div>
-
-            {/* MATERIAS PARA GRÁFICO */}
-            <div className="campos-grafico">
-              <label>
-                <strong>Materias para gráfico</strong>
-              </label>
-              <input
-                type="text"
-                value={graficoMateria1}
-                onChange={(e) => setGraficoMateria1(e.target.value)}
-                placeholder="Materia 1 (obligatoria)"
-              />
-              <input
-                type="text"
-                value={graficoMateria2}
-                onChange={(e) => setGraficoMateria2(e.target.value)}
-                placeholder="Materia 2 (obligatoria)"
-              />
-              <input
-                type="text"
-                value={graficoMateria3}
-                onChange={(e) => setGraficoMateria3(e.target.value)}
-                placeholder="Materia 3 (opcional)"
-              />
-            </div>
-
-            {/* BOTONES */}
-            <div className="field-button botones-filtros">
-              <button className="primary-button" onClick={buscarMaterias}>
-                Buscar
-              </button>
-
-              <button
-                className="primary-button"
-                type="button"
-                onClick={() => {
-                  if (!filtroCarrera) {
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                    return;
-                  }
-                  if (reticulaRef.current) {
-                    reticulaRef.current.scrollIntoView({
-                      behavior: "smooth",
-                      block: "start",
-                    });
-                  }
-                }}
-              >
-                Ver retícula
-              </button>
-
-              <button
-                className="primary-button"
-                type="button"
-                onClick={handleVerGrafico}
-              >
-                Ver gráfico
-              </button>
+              <span>Mostrar solo módulos de especialidad</span>
             </div>
           </div>
-        </section>
 
-        {/* RESUMEN CARRERA + RETÍCULA */}
-        {filtroCarrera && (
-          <section className="reticula-section" ref={reticulaRef}>
-            {/* Resumen de la carrera */}
-            {carreraSeleccionada && (
-              <div className="career-summary-card">
-                <h2>{carreraSeleccionada.nombre}</h2>
-                <div className="career-summary-tags">
+          {/* MATERIAS PARA GRÁFICO */}
+          <div className="campos-grafico">
+            <label>
+              <strong>Materias para gráfico</strong>
+            </label>
+            <input
+              type="text"
+              value={graficoMateria1}
+              onChange={(e) => setGraficoMateria1(e.target.value)}
+              placeholder="Materia 1 (obligatoria)"
+            />
+            <input
+              type="text"
+              value={graficoMateria2}
+              onChange={(e) => setGraficoMateria2(e.target.value)}
+              placeholder="Materia 2 (obligatoria)"
+            />
+            <input
+              type="text"
+              value={graficoMateria3}
+              onChange={(e) => setGraficoMateria3(e.target.value)}
+              placeholder="Materia 3 (opcional)"
+            />
+          </div>
+
+          {/* BOTONES */}
+          <div className="field-button botones-filtros">
+            <button className="primary-button" onClick={buscarMaterias}>
+              Buscar
+            </button>
+
+            <button
+              className="primary-button"
+              type="button"
+              onClick={() => {
+                if (!filtroCarrera) {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                  return;
+                }
+                if (reticulaRef.current) {
+                  reticulaRef.current.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  });
+                }
+              }}
+            >
+              Ver retícula
+            </button>
+
+            <button
+              className="primary-button"
+              type="button"
+              onClick={handleVerGrafico}
+            >
+              Ver gráfico
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* RESUMEN CARRERA + RETÍCULA */}
+      {filtroCarrera && (
+        <section className="reticula-section" ref={reticulaRef}>
+          {carreraSeleccionada && (
+            <div className="career-summary-card">
+              <h2>{carreraSeleccionada.nombre}</h2>
+              <div className="career-summary-tags">
+                <span>
+                  <strong>Modalidad:</strong>{" "}
+                  {carreraSeleccionada.modalidad || "—"}
+                </span>
+                <span>
+                  <strong>Grado:</strong> {carreraSeleccionada.grado || "—"}
+                </span>
+                {carreraSeleccionada.clave_oficial && (
                   <span>
-                    <strong>Modalidad:</strong>{" "}
-                    {carreraSeleccionada.modalidad || "—"}
+                    <strong>Clave oficial:</strong>{" "}
+                    {carreraSeleccionada.clave_oficial}
                   </span>
-                  <span>
-                    <strong>Grado:</strong> {carreraSeleccionada.grado || "—"}
-                  </span>
-                  {carreraSeleccionada.clave_oficial && (
-                    <span>
-                      <strong>Clave oficial:</strong>{" "}
-                      {carreraSeleccionada.clave_oficial}
-                    </span>
-                  )}
-                </div>
+                )}
               </div>
-            )}
-
-            {/* Retícula por semestre */}
-            <div className="reticula-header-row">
-              <h3 className="section-title">Retícula por semestre</h3>
             </div>
+          )}
 
-            {Object.keys(materiasPorSemestre).length === 0 ? (
-              <p className="empty-text">
-                No hay materias registradas para esta carrera.
-              </p>
-            ) : (
-              <div className="semestres-grid">
-                {Object.entries(materiasPorSemestre)
-                  .sort(([a], [b]) => Number(a) - Number(b))
-                  .map(([semestre, mats]) => (
-                    <div key={semestre} className="semestre-card">
-                      <h4 className="semestre-title">Semestre {semestre}</h4>
-                      <ul className="materias-list">
-                        {mats.map((m) => (
-                          <li key={m._id} className="materia-item">
-                            <div className="materia-header">
-                              <span className="materia-clave">{m.clave}</span>
-                              <span className="materia-nombre">{m.nombre}</span>
-                            </div>
-                            <div className="materia-detalles">
-                              Teoría: {m.horas_teoria ?? 0} h · Práctica:{" "}
-                              {m.horas_practica ?? 0} h · Créditos:{" "}
-                              {m.creditos ?? 0}
-                            </div>
-                            <div className="materia-prerreq">
-                              Prerrequisitos:{" "}
-                              {m.prerrequisitos?.length
-                                ? m.prerrequisitos.map((p) => p.clave).join(", ")
-                                : "Ninguno"}
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-              </div>
-            )}
+          {/* Retícula por semestre */}
+          <div className="reticula-header-row">
+            <h3 className="section-title">Retícula por semestre</h3>
+          </div>
 
-            {/* Especialidad (abajo) */}
-            {soloEspecialidad && materiasEspecialidad.length > 0 && (
-              <div id="seccion-especialidad" className="especialidad-section">
-                <h3 className="section-title">Módulos de especialidad</h3>
-                {Object.entries(especialidades).map(([nombreEsp, mats]) => (
-                  <div key={nombreEsp} className="especialidad-bloque">
-                    <h4 className="especialidad-title">{nombreEsp}</h4>
+          {Object.keys(materiasPorSemestre).length === 0 ? (
+            <p className="empty-text">
+              No hay materias registradas para esta carrera.
+            </p>
+          ) : (
+            <div className="semestres-grid">
+              {Object.entries(materiasPorSemestre)
+                .sort(([a], [b]) => Number(a) - Number(b))
+                .map(([semestre, mats]) => (
+                  <div key={semestre} className="semestre-card">
+                    <h4 className="semestre-title">Semestre {semestre}</h4>
                     <ul className="materias-list">
                       {mats.map((m) => (
                         <li key={m._id} className="materia-item">
@@ -772,97 +505,261 @@ function App() {
                     </ul>
                   </div>
                 ))}
-              </div>
-            )}
-          </section>
-        )}
+            </div>
+          )}
 
-        {/* TABLA DE RESULTADOS (consulta por filtros) */}
-        <section className="tabla-section" ref={tablaRef}>
-          <h2 className="section-title">Resultados de la búsqueda</h2>
-          <div className="tabla-wrapper">
-            <table className="result-table">
-              <thead>
-                <tr>
-                  <th>Clave</th>
-                  <th>Nombre</th>
-                  <th>Créditos</th>
-                  <th>Semestre</th>
-                  <th>Especialidad</th>
-                  <th>Prerrequisitos</th>
-                  <th>Estado</th>
-                  <th>Tec</th>
-                  <th>Carrera</th>
-                </tr>
-              </thead>
-              <tbody>
-                {materias.map((m) => (
-                  <tr key={m._id}>
-                    <td>{m.clave}</td>
-                    <td>{m.nombre}</td>
-                    <td>{m.creditos}</td>
-                    <td>{m.semestre_recomendado}</td>
-                    <td>{m.es_modulo_especialidad ? "Sí" : "No"}</td>
-                    <td>
-                      {m.prerrequisitos?.length > 0
-                        ? m.prerrequisitos.map((p) => p.clave).join(", ")
-                        : "—"}
-                    </td>
-                    <td>{m.tec?.estado}</td>
-                    <td>{m.tec?.nombre}</td>
-                    <td>{m.carrera?.nombre}</td>
-                  </tr>
-                ))}
-                {materias.length === 0 && (
-                  <tr>
-                    <td colSpan="9" className="empty-text">
-                      Usa los filtros de arriba y presiona <b>Buscar</b> para ver
-                      materias.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        {/* GRÁFICA DE BARRAS */}
-        <section className="grafica-section" ref={graficoRef}>
-          <h2 className="section-title">
-            Distribución de materias en carreras (gráfico)
-          </h2>
-
-          {graficoDatos.length === 0 ? (
-            <p className="empty-text">
-              Escribe hasta tres materias en “Materias para gráfico”, pulsa{" "}
-              <b>Buscar</b> para traer las materias y luego haz clic en{" "}
-              <b>Ver gráfico</b>. La gráfica usa las carreras de la búsqueda
-              actual.
-            </p>
-          ) : (
-            <div className="grafica-barras">
-              {graficoDatos.map((d) => (
-                <div key={d.nombre} className="barra-row">
-                  <span className="barra-label">{d.nombre}</span>
-                  <div className="barra-track">
-                    <div
-                      className="barra-fill"
-                      style={{
-                        width: `${Math.max(d.porcentaje, 5)}%`,
-                      }}
-                    >
-                      <span className="barra-value">
-                        {d.count} carreras ({d.porcentaje.toFixed(1)}%)
-                      </span>
-                    </div>
-                  </div>
+          {/* Especialidad */}
+          {soloEspecialidad && materiasEspecialidad.length > 0 && (
+            <div id="seccion-especialidad" className="especialidad-section">
+              <h3 className="section-title">Módulos de especialidad</h3>
+              {Object.entries(especialidades).map(([nombreEsp, mats]) => (
+                <div key={nombreEsp} className="especialidad-bloque">
+                  <h4 className="especialidad-title">{nombreEsp}</h4>
+                  <ul className="materias-list">
+                    {mats.map((m) => (
+                      <li key={m._id} className="materia-item">
+                        <div className="materia-header">
+                          <span className="materia-clave">{m.clave}</span>
+                          <span className="materia-nombre">{m.nombre}</span>
+                        </div>
+                        <div className="materia-detalles">
+                          Teoría: {m.horas_teoria ?? 0} h · Práctica:{" "}
+                          {m.horas_practica ?? 0} h · Créditos:{" "}
+                          {m.creditos ?? 0}
+                        </div>
+                        <div className="materia-prerreq">
+                          Prerrequisitos:{" "}
+                          {m.prerrequisitos?.length
+                            ? m.prerrequisitos.map((p) => p.clave).join(", ")
+                            : "Ninguno"}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               ))}
             </div>
           )}
         </section>
-      </div>
-    </>
+      )}
+
+      {/* TABLA DE RESULTADOS */}
+      <section className="tabla-section" ref={tablaRef}>
+        <h2 className="section-title">Resultados de la búsqueda</h2>
+        <div className="tabla-wrapper">
+          <table className="result-table">
+            <thead>
+              <tr>
+                <th>Clave</th>
+                <th>Nombre</th>
+                <th>Créditos</th>
+                <th>Semestre</th>
+                <th>Especialidad</th>
+                <th>Prerrequisitos</th>
+                <th>Estado</th>
+                <th>Tec</th>
+                <th>Carrera</th>
+              </tr>
+            </thead>
+            <tbody>
+              {materias.map((m) => (
+                <tr key={m._id}>
+                  <td>{m.clave}</td>
+                  <td>{m.nombre}</td>
+                  <td>{m.creditos}</td>
+                  <td>{m.semestre_recomendado}</td>
+                  <td>{m.es_modulo_especialidad ? "Sí" : "No"}</td>
+                  <td>
+                    {m.prerrequisitos?.length > 0
+                      ? m.prerrequisitos.map((p) => p.clave).join(", ")
+                      : "—"}
+                  </td>
+                  <td>{m.tec?.estado}</td>
+                  <td>{m.tec?.nombre}</td>
+                  <td>{m.carrera?.nombre}</td>
+                </tr>
+              ))}
+              {materias.length === 0 && (
+                <tr>
+                  <td colSpan="9" className="empty-text">
+                    Usa los filtros de arriba y presiona <b>Buscar</b> para ver
+                    materias.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* PANEL DE GRÁFICAS (tipo Power BI) */}
+      <section className="grafica-section" ref={graficoRef}>
+        <h2 className="section-title">Análisis de materias y créditos</h2>
+
+        {materias.length === 0 ? (
+          <p className="empty-text">
+            Primero realiza una búsqueda. Las gráficas se actualizarán en tiempo
+            real según los resultados y las materias que escribas en “Materias
+            para gráfico”.
+          </p>
+        ) : (
+          <div className="charts-grid">
+            {/* Gráfica 1: Materias compartidas entre carreras */}
+            {graficoDatos.length > 0 && (
+              <div className="chart-card">
+                <h3>Materias compartidas entre carreras</h3>
+                <p className="chart-subtitle">
+                  Número de carreras donde aparece cada materia escrita arriba
+                  (coincidencia por nombre).
+                </p>
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart
+                    data={graficoDatos}
+                    layout="vertical"
+                    margin={{ top: 10, right: 20, left: 40, bottom: 10 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="rgba(148, 163, 255, 0.3)"
+                    />
+                    <XAxis
+                      type="number"
+                      stroke="#e5e7ff"
+                      tick={{ fill: "#e5e7ff", fontSize: 12 }}
+                    />
+                    <YAxis
+                      type="category"
+                      dataKey="nombre"
+                      width={150}
+                      tick={{ fill: "#e5e7ff", fontSize: 12 }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: "#050716",
+                        border: "1px solid #832eb4",
+                        borderRadius: 8,
+                        color: "#f8f7ff",
+                      }}
+                    />
+                    <Bar
+                      dataKey="count"
+                      name="Carreras"
+                      fill="#a855f7"
+                      radius={[0, 6, 6, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
+            {/* Gráfica 2: Créditos totales por semestre */}
+            {datosCreditosPorSemestre.length > 0 && (
+              <div className="chart-card">
+                <h3>Créditos totales por semestre</h3>
+                <p className="chart-subtitle">
+                  Suma de créditos de las materias encontradas en cada semestre.
+                </p>
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart
+                    data={datosCreditosPorSemestre}
+                    margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="rgba(148, 163, 255, 0.3)"
+                    />
+                    <XAxis
+                      dataKey="semestre"
+                      stroke="#e5e7ff"
+                      tick={{ fill: "#e5e7ff", fontSize: 12 }}
+                      label={{
+                        value: "Semestre",
+                        position: "insideBottom",
+                        offset: -8,
+                        fill: "#e5e7ff",
+                        fontSize: 11,
+                      }}
+                    />
+                    <YAxis
+                      stroke="#e5e7ff"
+                      tick={{ fill: "#e5e7ff", fontSize: 12 }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: "#050716",
+                        border: "1px solid #832eb4",
+                        borderRadius: 8,
+                        color: "#f8f7ff",
+                      }}
+                    />
+                    <Bar
+                      dataKey="totalCreditos"
+                      name="Créditos"
+                      fill="#6366f1"
+                      radius={[6, 6, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
+            {/* Gráfica 3: Materias por estado */}
+            {datosMateriasPorEstado.length > 0 && (
+              <div className="chart-card">
+                <h3>Materias encontradas por estado</h3>
+                <p className="chart-subtitle">
+                  Cantidad de materias (filas de la tabla) asociadas a cada
+                  estado.
+                </p>
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart
+                    data={datosMateriasPorEstado}
+                    margin={{ top: 10, right: 20, left: 10, bottom: 60 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="rgba(148, 163, 255, 0.3)"
+                    />
+                    <XAxis
+                      dataKey="estado"
+                      stroke="#e5e7ff"
+                      tick={{ fill: "#e5e7ff", fontSize: 11 }}
+                      interval={0}
+                      angle={-25}
+                      textAnchor="end"
+                    />
+                    <YAxis
+                      stroke="#e5e7ff"
+                      tick={{ fill: "#e5e7ff", fontSize: 12 }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: "#050716",
+                        border: "1px solid #832eb4",
+                        borderRadius: 8,
+                        color: "#f8f7ff",
+                      }}
+                    />
+                    <Legend
+                      wrapperStyle={{
+                        color: "#e5e7ff",
+                        fontSize: 11,
+                      }}
+                    />
+                    <Bar
+                      dataKey="totalMaterias"
+                      name="Materias"
+                      fill="#ec4899"
+                      radius={[6, 6, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+    </div>
   );
 }
 

@@ -1,72 +1,73 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
 
-const tecRoutes = require("./routes/tecs");
-const carreraRoutes = require("./routes/carreras");
-const materiaRoutes = require("./routes/materias");
+// Rutas de tu proyecto
+const tecRoutes = require('./routes/tecs');
+const carreraRoutes = require('./routes/carreras');
+const materiaRoutes = require('./routes/materias');
 
 const app = express();
 
-// ------------------------------------------------------------------
-// 📢 CAMBIO 1: Configuración de CORS con Lista Blanca
-// ------------------------------------------------------------------
-
-// Lista de URLs autorizadas para acceder a esta API.
+// ---------------------------------------------
+// 1. Configuración de CORS
+// ---------------------------------------------
 const allowedOrigins = [
-    // ¡TU FRONTEND! Esta URL debe coincidir exactamente con el dominio de tu otra app de Railway.
-    'https://dependable-creation-production.up.railway.app', 
-    
-    // URLs de desarrollo local:
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'http://localhost:8080', 
+  'https://dependable-creation-production.up.railway.app', // FRONTEND en Railway
+  'https://tecnmreticulas-production.up.railway.app',      // BACKEND (opcional)
+  'http://localhost:3000',                                 // desarrollo local
 ];
 
 const corsOptions = {
-    origin: (origin, callback) => {
-        if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-            callback(null, true);
-        } else {
-            // Este error se verá si alguien intenta acceder desde un dominio no autorizado.
-            callback(new Error('No permitido por CORS'), false);
-        }
-    },
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-    optionsSuccessStatus: 204
+  origin: (origin, callback) => {
+    // Permite si:
+    // 1. No hay origin (Postman, curl, etc.)
+    // 2. El origin está en la lista blanca
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'), false);
+    }
+  },
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+  credentials: true,
 };
 
-// Usar el middleware CORS con la configuración de la lista blanca.
-// Esto soluciona el error que ves en la consola (F12).
+// Usa CORS y JSON
 app.use(cors(corsOptions));
-// ------------------------------------------------------------------
-
 app.use(express.json());
 
-// Rutas API (sin cambios, como lo tenías)
-app.use("/api/tecs", tecRoutes);
-app.use("/api/carreras", carreraRoutes);
-app.use("/api/materias", materiaRoutes);
+// ---------------------------------------------
+// 2. Rutas API
+// ---------------------------------------------
+app.use('/api/tecs', tecRoutes);
+app.use('/api/carreras', carreraRoutes);
+app.use('/api/materias', materiaRoutes);
 
-// ------------------------------------------------------------------
-// 📢 CAMBIO 2: Uso de Variables de Entorno para Railway
-// ------------------------------------------------------------------
+// Endpoint de prueba para el frontend
+app.get('/api-status', (req, res) => {
+  res.json({ ok: true, mensaje: 'API TECNM Retículas funcionando 🚀' });
+});
 
-// Railway asigna el puerto a process.env.PORT. Usamos 8080 como fallback local.
-const PORT = process.env.PORT || 8080; 
-
-// Railway asigna la URL de la DB a una variable de entorno. Usamos el valor local como fallback.
-const DB_URI = process.env.MONGO_URL || process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/tecnm_reticulas";
-
+// ---------------------------------------------
+// 3. Conexión a MongoDB
+// ---------------------------------------------
 mongoose
-    // Usar la variable de entorno para la conexión a DB.
-    .connect(DB_URI) 
-    .then(() => {
-        console.log("Conectado a MongoDB");
-        // Usar la variable de entorno PORT para que Railway sepa dónde escuchar.
-        app.listen(PORT, () => {
-            console.log(`Servidor backend escuchando en el puerto ${PORT}`);
-        });
-    })
-    .catch((err) => console.error("Error al conectar a MongoDB:", err));
+  .connect(process.env.MONGODB_URL, {
+    dbName: 'tecnm_reticulas',
+  })
+  .then(() => {
+    console.log('Conectado a MongoDB');
+  })
+  .catch((err) => {
+    console.error('Error conectando a MongoDB:', err);
+  });
+
+// ---------------------------------------------
+// 4. Inicialización del servidor
+// ---------------------------------------------
+const PORT = process.env.PORT || 8080;
+
+app.listen(PORT, () => {
+  console.log(`Servidor escuchando en el puerto ${PORT}`);
+});
