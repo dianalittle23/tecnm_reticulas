@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { API_URL } from "./config";
-import "./App.css"; 
+import "./App.css";
 import {
   BarChart,
   Bar,
@@ -12,13 +12,10 @@ import {
   Legend,
 } from "recharts";
 
-
-//  CONFIGURACIÓN Y UTILIDADES CONSOLIDADAS 
-
-// URL BASE  backend en Railway
+// URL BASE del backend en Railway
 const API_BASE = `${API_URL}/api`;
 
-//
+// Helper para fetch
 const fetchJson = async (url, params = {}) => {
   const query = new URLSearchParams(params).toString();
   const fullUrl = query ? `${url}?${query}` : url;
@@ -27,12 +24,12 @@ const fetchJson = async (url, params = {}) => {
     const response = await fetch(fullUrl);
     if (!response.ok) {
       console.error(`Error al obtener datos de ${fullUrl}: ${response.status}`);
-      return []; // Devuelve array vacío en caso de error HTTP
+      return [];
     }
     return response.json();
   } catch (e) {
     console.error(`Error de red al llamar a ${fullUrl}:`, e);
-    return []; // Devuelve array vacío en caso de error de red
+    return [];
   }
 };
 
@@ -78,56 +75,52 @@ function App() {
     );
   }, [filtroTec]);
 
-  // CÁLCULO DEL GRÁFICO 
-const calcularGrafico = (materiasBase) => {
-  // Si nos pasan una base usamos esa; si no, usamos las materias ya guardadas en estado
-  const base = materiasBase || materias;
+  // === CÁLCULO DEL GRÁFICO (usa las materias ya buscadas) ===
+  const calcularGrafico = (materiasBase) => {
+    const base = materiasBase || materias;
 
-  // Tomamos los textos que el usuario escribió en "Materias para gráfico"
-  const nombres = [graficoMateria1, graficoMateria2, graficoMateria3]
-    .map((n) => n.trim())
-    .filter(Boolean); // quitamos vacíos
+    const nombres = [graficoMateria1, graficoMateria2, graficoMateria3]
+      .map((n) => n.trim())
+      .filter(Boolean);
 
-  // Si no hay nombres o no hay datos, dejamos la gráfica vacía
-  if (nombres.length === 0 || base.length === 0) {
-    setGraficoDatos([]);
-    return;
-  }
+    if (nombres.length === 0 || base.length === 0) {
+      setGraficoDatos([]);
+      return;
+    }
 
-  // Carreras distintas presentes en los resultados actuales
-  const carrerasTotales = new Set(
-    base.map((m) => m.carrera?.nombre).filter(Boolean)
-  );
-  const totalCarreras = carrerasTotales.size || 1;
+    // Carreras distintas presentes en los resultados actuales
+    const carrerasTotales = new Set(
+      base.map((m) => m.carrera?.nombre).filter(Boolean)
+    );
+    const totalCarreras = carrerasTotales.size || 1;
 
-  const datos = nombres.map((nom) => {
-    const carrerasConMateria = new Set();
-
-    base.forEach((m) => {
-      const nombreMateria = (m.nombre || "").toLowerCase();
+    const datos = nombres.map((nom) => {
+      const carrerasConMateria = new Set();
       const textoBuscado = nom.toLowerCase().trim();
 
-      // usamos "contiene" por nombre de materia
-      if (nombreMateria.includes(textoBuscado)) {
-        if (m.carrera?.nombre) {
-          carrerasConMateria.add(m.carrera.nombre);
+      base.forEach((m) => {
+        const nombreMateria = (m.nombre || "").toLowerCase();
+
+        // "contiene" por nombre de materia
+        if (nombreMateria.includes(textoBuscado)) {
+          if (m.carrera?.nombre) {
+            carrerasConMateria.add(m.carrera.nombre);
+          }
         }
-      }
+      });
+
+      const count = carrerasConMateria.size;
+      const porcentaje = (count / totalCarreras) * 100;
+
+      return {
+        nombre: nom,
+        count,
+        porcentaje,
+      };
     });
 
-    const count = carrerasConMateria.size;
-    const porcentaje = (count / totalCarreras) * 100;
-
-    return {
-      nombre: nom,   // texto ingresado por el usuario
-      count,         // cuántas carreras la tienen
-      porcentaje,    // % de carreras donde aparece
-    };
-  });
-
-  setGraficoDatos(datos);
-};
-
+    setGraficoDatos(datos);
+  };
 
   // Buscar materias para la tabla
   const buscarMaterias = () => {
@@ -196,7 +189,7 @@ const calcularGrafico = (materiasBase) => {
     [carreras, filtroCarrera]
   );
 
-  // Materias por semestre (tronco común)
+  // Materias por semestre (tronco común, para retícula)
   const materiasPorSemestre = useMemo(() => {
     const grupos = {};
     reticulaMaterias
@@ -225,6 +218,41 @@ const calcularGrafico = (materiasBase) => {
     });
     return map;
   }, [materiasEspecialidad]);
+
+  // === Datos para las gráficas de retícula ===
+
+  // Materias por semestre (para gráfica)
+  const datosMateriasPorSemestre = useMemo(() => {
+    const conteo = {};
+    reticulaMaterias.forEach((m) => {
+      const sem = m.semestre_recomendado || 0;
+      conteo[sem] = (conteo[sem] || 0) + 1;
+    });
+
+    return Object.entries(conteo)
+      .sort(([a], [b]) => Number(a) - Number(b))
+      .map(([semestre, total]) => ({
+        semestre: `Sem ${semestre}`,
+        total,
+      }));
+  }, [reticulaMaterias]);
+
+  // Créditos por semestre
+  const datosCreditosPorSemestre = useMemo(() => {
+    const suma = {};
+    reticulaMaterias.forEach((m) => {
+      const sem = m.semestre_recomendado || 0;
+      const creditos = Number(m.creditos || 0);
+      suma[sem] = (suma[sem] || 0) + creditos;
+    });
+
+    return Object.entries(suma)
+      .sort(([a], [b]) => Number(a) - Number(b))
+      .map(([semestre, creditos]) => ({
+        semestre: `Sem ${semestre}`,
+        creditos,
+      }));
+  }, [reticulaMaterias]);
 
   // Scroll a especialidad cuando se marca la casilla
   useEffect(() => {
@@ -567,40 +595,90 @@ const calcularGrafico = (materiasBase) => {
         </div>
       </section>
 
-      {/* GRÁFICA DE BARRAS */}
+      {/* DASHBOARD DE GRÁFICAS */}
       <section className="grafica-section" ref={graficoRef}>
-        <h2 className="section-title">
-          Distribución de materias en carreras (gráfico)
-        </h2>
+        <h2 className="section-title">Análisis visual de materias</h2>
 
-        {graficoDatos.length === 0 ? (
-          <p className="empty-text">
-            Escribe hasta tres materias en “Materias para gráfico”, pulsa{" "}
-            <b>Buscar</b> para traer las materias y luego haz clic en{" "}
-            <b>Ver gráfico</b>. La gráfica usa las carreras de la búsqueda
-            actual.
-          </p>
-        ) : (
-          <div className="grafica-barras">
-            {graficoDatos.map((d) => (
-              <div key={d.nombre} className="barra-row">
-                <span className="barra-label">{d.nombre}</span>
-                <div className="barra-track">
-                  <div
-                    className="barra-fill"
-                    style={{
-                      width: `${Math.max(d.porcentaje, 5)}%`,
-                    }}
-                  >
-                    <span className="barra-value">
-                      {d.count} carreras ({d.porcentaje.toFixed(1)}%)
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
+        <div className="charts-grid">
+          {/* Gráfica 1: carreras que comparten la materia (por nombre) */}
+          <div className="chart-card">
+            <h3>Materias vs número de carreras</h3>
+            <p className="chart-subtitle">
+              Basado en &quot;Materias para gráfico&quot; y en las carreras de la
+              búsqueda actual.
+            </p>
+
+            {graficoDatos.length === 0 ? (
+              <p className="empty-text">
+                Escribe una o más materias en &quot;Materias para gráfico&quot;,
+                pulsa <b>Buscar</b> y luego <b>Ver gráfico</b>.
+              </p>
+            ) : (
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={graficoDatos}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                  <XAxis dataKey="nombre" />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="count" name="Carreras" />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
-        )}
+
+          {/* Gráfica 2: número de materias por semestre */}
+          <div className="chart-card">
+            <h3>Materias por semestre (retícula)</h3>
+            <p className="chart-subtitle">
+              Se actualiza al seleccionar una carrera y cargar su retícula.
+            </p>
+
+            {datosMateriasPorSemestre.length === 0 ? (
+              <p className="empty-text">
+                Selecciona una carrera y espera a que se cargue la retícula para
+                ver esta gráfica.
+              </p>
+            ) : (
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={datosMateriasPorSemestre}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                  <XAxis dataKey="semestre" />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="total" name="Materias" />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          {/* Gráfica 3: créditos por semestre */}
+          <div className="chart-card">
+            <h3>Créditos por semestre</h3>
+            <p className="chart-subtitle">
+              Muestra la carga total de créditos por semestre en la retícula
+              actual.
+            </p>
+
+            {datosCreditosPorSemestre.length === 0 ? (
+              <p className="empty-text">
+                Selecciona una carrera para ver la distribución de créditos.
+              </p>
+            ) : (
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={datosCreditosPorSemestre}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                  <XAxis dataKey="semestre" />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="creditos" name="Créditos" />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
       </section>
     </div>
   );
