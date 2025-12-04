@@ -489,41 +489,44 @@ body {
   );
   white-space: nowrap;
 }
-/* ==== DASHBOARD DE GRÁFICAS (POWER BI VIBES) ==== */
+/* ===== GRID DE GRÁFICAS (tipo dashboard) ===== */
 
 .charts-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 24px;
+  gap: 18px;
   margin-top: 10px;
 }
 
 .chart-card {
-  background: radial-gradient(circle at top, #20124d 0, #050716 60%);
+  background: radial-gradient(circle at top left, rgba(130, 46, 180, 0.22) 0, #10142b 45%);
   border-radius: var(--radius-lg);
-  padding: 18px 20px 20px;
-  border: 1px solid rgba(131, 46, 180, 0.8);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.65);
-  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 12px 14px 10px;
 }
 
 .chart-card h3 {
-  margin: 0 0 4px 0;
+  margin: 0 0 4px;
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 600;
+  color: #f8f7ff;
 }
 
 .chart-subtitle {
-  margin: 0 0 12px 0;
-  font-size: 0.8rem;
+  margin: 0 0 8px;
+  font-size: 0.78rem;
   color: var(--text-soft);
 }
 
-
-
-
-
-.barra-value {
+/* Ajuste para los tooltips de Recharts (que no rompan el diseño) */
+.recharts-default-tooltip {
   font-size: 0.8rem;
-  color: #ffffff;
+}
+
+/* En pantallas pequeñas, una sola columna de charts */
+@media (max-width: 900px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
 }
