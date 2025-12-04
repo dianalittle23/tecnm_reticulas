@@ -1,6 +1,17 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { API_URL } from "./config";
 import "./App.css"; 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
+
 
 //  CONFIGURACIÓN Y UTILIDADES CONSOLIDADAS 
 
