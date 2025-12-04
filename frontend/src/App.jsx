@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { API_URL } from "./config";
-import "./App.css"; // usa tus estilos de App.css
+import "./App.css"; 
 
-// === CONFIGURACIÓN Y UTILIDADES CONSOLIDADAS ===
+//  CONFIGURACIÓN Y UTILIDADES CONSOLIDADAS 
 
-// URL BASE -> tu backend en Railway
+// URL BASE  backend en Railway
 const API_BASE = `${API_URL}/api`;
 
-// Función para reemplazar axios.get con fetch nativo.
+//
 const fetchJson = async (url, params = {}) => {
   const query = new URLSearchParams(params).toString();
   const fullUrl = query ? `${url}?${query}` : url;
@@ -67,46 +67,56 @@ function App() {
     );
   }, [filtroTec]);
 
-  // === CÁLCULO DEL GRÁFICO (usa las materias ya buscadas) ===
-  const calcularGrafico = (materiasBase) => {
-    const base = materiasBase || materias;
+  // CÁLCULO DEL GRÁFICO 
+const calcularGrafico = (materiasBase) => {
+  // Si nos pasan una base usamos esa; si no, usamos las materias ya guardadas en estado
+  const base = materiasBase || materias;
 
-    const nombres = [graficoMateria1, graficoMateria2, graficoMateria3]
-      .map((n) => n.trim())
-      .filter(Boolean);
+  // Tomamos los textos que el usuario escribió en "Materias para gráfico"
+  const nombres = [graficoMateria1, graficoMateria2, graficoMateria3]
+    .map((n) => n.trim())
+    .filter(Boolean); // quitamos vacíos
 
-    if (nombres.length === 0 || base.length === 0) {
-      setGraficoDatos([]);
-      return;
-    }
+  // Si no hay nombres o no hay datos, dejamos la gráfica vacía
+  if (nombres.length === 0 || base.length === 0) {
+    setGraficoDatos([]);
+    return;
+  }
 
-    const carrerasSet = new Set(
-      base.map((m) => m.carrera?.nombre).filter(Boolean)
-    );
-    const totalCarreras = carrerasSet.size || 1;
+  // Carreras distintas presentes en los resultados actuales
+  const carrerasTotales = new Set(
+    base.map((m) => m.carrera?.nombre).filter(Boolean)
+  );
+  const totalCarreras = carrerasTotales.size || 1;
 
-    const datos = nombres.map((nom) => {
-      const carrerasConMateria = new Set(
-        base
-          .filter((m) =>
-            (m.nombre || "").toLowerCase().includes(nom.toLowerCase())
-          )
-          .map((m) => m.carrera?.nombre)
-          .filter(Boolean)
-      );
+  const datos = nombres.map((nom) => {
+    const carrerasConMateria = new Set();
 
-      const count = carrerasConMateria.size;
-      const porcentaje = (count / totalCarreras) * 100;
+    base.forEach((m) => {
+      const nombreMateria = (m.nombre || "").toLowerCase();
+      const textoBuscado = nom.toLowerCase().trim();
 
-      return {
-        nombre: nom,
-        count,
-        porcentaje,
-      };
+      // usamos "contiene" por nombre de materia
+      if (nombreMateria.includes(textoBuscado)) {
+        if (m.carrera?.nombre) {
+          carrerasConMateria.add(m.carrera.nombre);
+        }
+      }
     });
 
-    setGraficoDatos(datos);
-  };
+    const count = carrerasConMateria.size;
+    const porcentaje = (count / totalCarreras) * 100;
+
+    return {
+      nombre: nom,   // texto ingresado por el usuario
+      count,         // cuántas carreras la tienen
+      porcentaje,    // % de carreras donde aparece
+    };
+  });
+
+  setGraficoDatos(datos);
+};
+
 
   // Buscar materias para la tabla
   const buscarMaterias = () => {
