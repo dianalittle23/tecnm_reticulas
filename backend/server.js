@@ -13,14 +13,16 @@ const app = express();
 // 1. Configuración de CORS
 // ---------------------------------------------
 const allowedOrigins = [
-  'https://dependable-creation-production.up.railway.app', // tu FRONTEND
-  'https://tecnmreticulas-production.up.railway.app',      // tu BACKEND (opcional)
+  'https://dependable-creation-production.up.railway.app', // FRONTEND en Railway
+  'https://tecnmreticulas-production.up.railway.app',      // BACKEND (opcional)
   'http://localhost:3000',                                 // desarrollo local
 ];
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // permitir si viene de un origen permitido o sin origen (Postman, curl, etc.)
+    // Permite si:
+    // 1. No hay origin (Postman, curl, etc.)
+    // 2. El origin está en la lista blanca
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
@@ -42,7 +44,7 @@ app.use('/api/tecs', tecRoutes);
 app.use('/api/carreras', carreraRoutes);
 app.use('/api/materias', materiaRoutes);
 
-// Endpoint sencillo para pruebas
+// Endpoint de prueba para el frontend
 app.get('/api-status', (req, res) => {
   res.json({ ok: true, mensaje: 'API TECNM Retículas funcionando 🚀' });
 });
