@@ -36,7 +36,6 @@ const fetchJson = async (url, params = {}) => {
   }
 };
 
-// Colores para el pastel
 const COLORS = ["#22c55e", "#06b6d4", "#f97316", "#ef4444", "#a855f7", "#eab308"];
 
 function App() {
@@ -101,7 +100,7 @@ function App() {
     const totalCarrerasResultados = carrerasEnResultados.size;
 
     // Referencia: todas las carreras del Tec seleccionado,
-    // si no hay, usamos las de los resultados
+    // si no hay usamos las que aparecen en los resultados
     const totalCarrerasReferencia =
       carreras.length > 0 ? carreras.length : totalCarrerasResultados || 1;
 
@@ -194,7 +193,7 @@ function App() {
     [tecs, filtroEstado]
   );
 
-  // Carrera seleccionada (para mostrar modalidad, grado, etc.)
+  // Carrera seleccionada
   const carreraSeleccionada = useMemo(
     () => carreras.find((c) => c._id === filtroCarrera) || null,
     [carreras, filtroCarrera]
@@ -615,7 +614,7 @@ function App() {
           </p>
         ) : (
           <div className="charts-grid">
-            {/* Gráfica 1: Materias compartidas entre carreras (barra + pastel) */}
+            {/* Gráfica 1: Materias compartidas entre carreras (BARRA + PASTEL) */}
             {graficoDatos.length > 0 && (
               <div className="chart-card">
                 <h3>Distribución de materias en carreras (gráfico)</h3>
