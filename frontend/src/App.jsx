@@ -565,7 +565,6 @@ function App() {
                 <th>Semestre</th>
                 <th>Especialidad</th>
                 <th>Prerrequisitos</th>
-                <th>Estado</th>
                 <th>Tec</th>
                 <th>Carrera</th>
               </tr>
