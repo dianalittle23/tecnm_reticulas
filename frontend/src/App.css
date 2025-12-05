@@ -424,55 +424,6 @@ body {
   font-size: 0.8rem;
 }
 
-/* ===== NUEVAS BARRAS DE PROGRESO DEL GRÁFICO 1 ===== */
-
-.progress-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-top: 12px;
-}
-
-.progress-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.progress-label-left {
-  min-width: 90px;
-  font-size: 0.95rem;
-  color: #e5e7ff;
-}
-
-.progress-bar {
-  position: relative;
-  flex: 1;
-  height: 28px;
-  border-radius: 999px;
-  background: #050716;
-  border: 1px solid rgba(168, 85, 247, 0.4);
-  overflow: hidden;
-}
-
-.progress-bar-fill {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #a855f7, #c084fc);
-}
-
-.progress-bar-text {
-  position: relative;
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  height: 100%;
-  padding-left: 12px;
-  font-size: 0.85rem;
-  color: #f9f7ff;
-  white-space: nowrap;
-}
 
 /* ===== RESPONSIVE ===== */
 
@@ -521,4 +472,26 @@ body {
 /* Campos de materias para gráfico alineados en columna */
 .campos-grafico input {
   width: 100%;
+}
+/* layout dentro de la tarjeta del gráfico 1 (barra + pastel lado a lado) */
+.chart-duo {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.chart-half {
+  width: 100%;
+  height: 220px;
+}
+
+@media (max-width: 900px) {
+  .chart-duo {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-half {
+    height: 220px;
+  }
 }
