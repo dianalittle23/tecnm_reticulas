@@ -378,7 +378,7 @@ body {
   padding: 10px 0;
 }
 
-/* ===== SECCIÓN GRÁFICA (opcional, por si quieres darle estilo extra) ===== */
+/* ===== SECCIÓN GRÁFICA ===== */
 
 .grafica-section {
   margin-top: 26px;
@@ -388,6 +388,42 @@ body {
   padding: 16px 18px 24px;
   box-shadow: var(--shadow);
 }
+
+/* ===== GRID DE GRÁFICAS (tipo dashboard) ===== */
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 18px;
+  margin-top: 10px;
+}
+
+.chart-card {
+  background: radial-gradient(circle at top left, rgba(130, 46, 180, 0.22) 0, #10142b 45%);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 12px 14px 10px;
+}
+
+.chart-card h3 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f8f7ff;
+}
+
+.chart-subtitle {
+  margin: 0 0 8px;
+  font-size: 0.78rem;
+  color: var(--text-soft);
+}
+
+/* Ajuste para los tooltips de Recharts (que no rompan el diseño) */
+.recharts-default-tooltip {
+  font-size: 0.8rem;
+}
+
 
 /* ===== RESPONSIVE ===== */
 
@@ -409,6 +445,10 @@ body {
     justify-content: flex-start;
     flex-wrap: wrap;
   }
+
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 600px) {
@@ -427,4 +467,31 @@ body {
   align-items: flex-end;
   justify-content: flex-end;
   gap: 12px;
+}
+
+/* Campos de materias para gráfico alineados en columna */
+.campos-grafico input {
+  width: 100%;
+}
+/* layout dentro de la tarjeta del gráfico 1 (barra + pastel lado a lado) */
+.chart-duo {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.chart-half {
+  width: 100%;
+  height: 220px;
+}
+
+@media (max-width: 900px) {
+  .chart-duo {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-half {
+    height: 220px;
+  }
 }

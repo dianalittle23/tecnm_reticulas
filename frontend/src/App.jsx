@@ -1,18 +1,8 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { API_URL } from "./config";
 import "./App.css";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
 
-// URL BASE  backend en Railway
+// URL BASE backend en Railway
 const API_BASE = `${API_URL}/api`;
 
 // Utilidad para llamar a la API
@@ -47,16 +37,9 @@ function App() {
 
   const [reticulaMaterias, setReticulaMaterias] = useState([]);
 
-  // Materias para gráfico 1
-  const [graficoMateria1, setGraficoMateria1] = useState("");
-  const [graficoMateria2, setGraficoMateria2] = useState("");
-  const [graficoMateria3, setGraficoMateria3] = useState("");
-  const [graficoDatos, setGraficoDatos] = useState([]);
-
   // refs para scroll
   const tablaRef = useRef(null);
   const reticulaRef = useRef(null);
-  const graficoRef = useRef(null);
 
   // Cargar tecs al iniciar
   useEffect(() => {
@@ -75,53 +58,6 @@ function App() {
     );
   }, [filtroTec]);
 
-  // === CÁLCULO DEL GRÁFICO 1: materias compartidas entre carreras ===
-  const calcularGrafico = (materiasBase) => {
-    const base = materiasBase || materias;
-
-    const nombres = [graficoMateria1, graficoMateria2, graficoMateria3]
-      .map((n) => n.trim())
-      .filter(Boolean);
-
-    if (nombres.length === 0 || base.length === 0) {
-      setGraficoDatos([]);
-      return;
-    }
-
-    // Carreras distintas presentes en los resultados actuales
-    const carrerasTotales = new Set(
-      base.map((m) => m.carrera?.nombre).filter(Boolean)
-    );
-    const totalCarreras = carrerasTotales.size || 1;
-
-    const datos = nombres.map((nom) => {
-      const carrerasConMateria = new Set();
-
-      base.forEach((m) => {
-        const nombreMateria = (m.nombre || "").toLowerCase();
-        const textoBuscado = nom.toLowerCase().trim();
-
-        // contiene por nombre de materia
-        if (nombreMateria.includes(textoBuscado)) {
-          if (m.carrera?.nombre) {
-            carrerasConMateria.add(m.carrera.nombre);
-          }
-        }
-      });
-
-      const count = carrerasConMateria.size;
-      const porcentaje = (count / totalCarreras) * 100;
-
-      return {
-        nombre: nom,
-        count,
-        porcentaje,
-      };
-    });
-
-    setGraficoDatos(datos);
-  };
-
   // Buscar materias para la tabla
   const buscarMaterias = () => {
     const params = {};
@@ -134,7 +70,6 @@ function App() {
 
     fetchJson(`${API_BASE}/materias`, params).then((data) => {
       setMaterias(data);
-      calcularGrafico(data); // actualiza la gráfica 1 con los nuevos resultados
 
       if (tablaRef.current) {
         tablaRef.current.scrollIntoView({
@@ -143,16 +78,6 @@ function App() {
         });
       }
     });
-  };
-
-  const handleVerGrafico = () => {
-    calcularGrafico();
-    if (graficoRef.current) {
-      graficoRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }
   };
 
   // Cargar TODAS las materias de la carrera seleccionada (retícula)
@@ -183,7 +108,7 @@ function App() {
     [tecs, filtroEstado]
   );
 
-  // Carrera seleccionada (para mostrar modalidad, grado, etc.)
+  // Carrera seleccionada
   const carreraSeleccionada = useMemo(
     () => carreras.find((c) => c._id === filtroCarrera) || null,
     [carreras, filtroCarrera]
@@ -218,39 +143,6 @@ function App() {
     });
     return map;
   }, [materiasEspecialidad]);
-
-  // Datos para gráfica 2: créditos totales por semestre (según la tabla actual)
-  const datosCreditosPorSemestre = useMemo(() => {
-    if (!materias.length) return [];
-    const map = {};
-    materias.forEach((m) => {
-      const sem = m.semestre_recomendado ?? "Sin semestre";
-      const clave = isNaN(Number(sem)) ? String(sem) : Number(sem);
-      const creditos = Number(m.creditos) || 0;
-      map[clave] = (map[clave] || 0) + creditos;
-    });
-
-    return Object.entries(map)
-      .sort(([a], [b]) => Number(a) - Number(b))
-      .map(([semestre, totalCreditos]) => ({
-        semestre: String(semestre),
-        totalCreditos,
-      }));
-  }, [materias]);
-
-  // Datos para gráfica 3: número de materias por estado (según la tabla actual)
-  const datosMateriasPorEstado = useMemo(() => {
-    if (!materias.length) return [];
-    const map = {};
-    materias.forEach((m) => {
-      const estado = m.tec?.estado || "Sin estado";
-      map[estado] = (map[estado] || 0) + 1;
-    });
-
-    return Object.entries(map)
-      .sort(([, a], [, b]) => b - a)
-      .map(([estado, totalMaterias]) => ({ estado, totalMaterias }));
-  }, [materias]);
 
   // Scroll a especialidad cuando se marca la casilla
   useEffect(() => {
@@ -379,31 +271,6 @@ function App() {
             </div>
           </div>
 
-          {/* MATERIAS PARA GRÁFICO */}
-          <div className="campos-grafico">
-            <label>
-              <strong>Materias para gráfico</strong>
-            </label>
-            <input
-              type="text"
-              value={graficoMateria1}
-              onChange={(e) => setGraficoMateria1(e.target.value)}
-              placeholder="Materia 1 (obligatoria)"
-            />
-            <input
-              type="text"
-              value={graficoMateria2}
-              onChange={(e) => setGraficoMateria2(e.target.value)}
-              placeholder="Materia 2 (obligatoria)"
-            />
-            <input
-              type="text"
-              value={graficoMateria3}
-              onChange={(e) => setGraficoMateria3(e.target.value)}
-              placeholder="Materia 3 (opcional)"
-            />
-          </div>
-
           {/* BOTONES */}
           <div className="field-button botones-filtros">
             <button className="primary-button" onClick={buscarMaterias}>
@@ -427,14 +294,6 @@ function App() {
               }}
             >
               Ver retícula
-            </button>
-
-            <button
-              className="primary-button"
-              type="button"
-              onClick={handleVerGrafico}
-            >
-              Ver gráfico
             </button>
           </div>
         </div>
@@ -556,7 +415,6 @@ function App() {
                 <th>Semestre</th>
                 <th>Especialidad</th>
                 <th>Prerrequisitos</th>
-                <th>Estado</th>
                 <th>Tec</th>
                 <th>Carrera</th>
               </tr>
