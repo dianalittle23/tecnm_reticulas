@@ -36,6 +36,7 @@ const fetchJson = async (url, params = {}) => {
   }
 };
 
+// Colores para el pastel
 const COLORS = ["#22c55e", "#06b6d4", "#f97316", "#ef4444", "#a855f7", "#eab308"];
 
 function App() {
@@ -99,8 +100,8 @@ function App() {
     );
     const totalCarrerasResultados = carrerasEnResultados.size;
 
-    // Referencia: todas las carreras del Tec seleccionado.
-    // Si no hay, usamos las carreras presentes en los resultados.
+    // Referencia: todas las carreras del Tec seleccionado,
+    // si no hay, usamos las de los resultados
     const totalCarrerasReferencia =
       carreras.length > 0 ? carreras.length : totalCarrerasResultados || 1;
 
@@ -229,7 +230,7 @@ function App() {
     return map;
   }, [materiasEspecialidad]);
 
-  // Datos para gráfica 2: créditos totales por semestre (según la tabla actual)
+  // Datos para gráfica 2: créditos totales por semestre
   const datosCreditosPorSemestre = useMemo(() => {
     if (!materias.length) return [];
     const map = {};
@@ -248,7 +249,7 @@ function App() {
       }));
   }, [materias]);
 
-  // Datos para gráfica 3: número de materias por estado (según la tabla actual)
+  // Datos para gráfica 3: número de materias por estado
   const datosMateriasPorEstado = useMemo(() => {
     if (!materias.length) return [];
     const map = {};
@@ -614,7 +615,7 @@ function App() {
           </p>
         ) : (
           <div className="charts-grid">
-            {/* Gráfica 1: Materias compartidas entre carreras (BARRA + PASTEL) */}
+            {/* Gráfica 1: Materias compartidas entre carreras (barra + pastel) */}
             {graficoDatos.length > 0 && (
               <div className="chart-card">
                 <h3>Distribución de materias en carreras (gráfico)</h3>
