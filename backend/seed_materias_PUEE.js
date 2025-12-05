@@ -1,7 +1,7 @@
-// backend/seed_materias_ITA_iele_2010_209.js
+// backend/seed_materias_ITPuebla_ielc_2010_211.js
 //
-// Inserta materias de Ingeniería Eléctrica IELE-2010-209
-// del Instituto Tecnológico de Aguascalientes en MongoDB.
+// Inserta materias de Ingeniería Electrónica IELC-2010-211
+// del Instituto Tecnológico de Puebla en MongoDB.
 
 const mongoose = require("mongoose");
 const Tec = require("./models/Tec");
@@ -10,14 +10,28 @@ const Materia = require("./models/Materia");
 
 const MONGODB_URI = "mongodb://127.0.0.1:27017/tecnm_reticulas";
 
-//  Materias extraídas de la retícula IELE-2010-209
+// Ajusta estos nombres a como los tengas guardados en tu BD
+const TEC_NOMBRE = "Instituto Tecnológico de Puebla";
+const CARRERA_NOMBRE = "Ingeniería Electrónica";
+const PLAN_ANIO = 2010;
+
+// Materias extraídas de la retícula IELC-2010-211
 // Semestre, clave, nombre, T-P-C
 const materiasDatos = [
-  // ---- Semestre 1 ----
+  // ---------- Semestre 1 ----------
   {
     semestre_recomendado: 1,
     clave: "ACF-0901",
     nombre: "Cálculo Diferencial",
+    cadena_creditos: "3-2-5",
+    horas_teoria: 3,
+    horas_practica: 2,
+    creditos: 5,
+  },
+  {
+    semestre_recomendado: 1,
+    clave: "AEF-1042",
+    nombre: "Mecánica Clásica",
     cadena_creditos: "3-2-5",
     horas_teoria: 3,
     horas_practica: 2,
@@ -34,21 +48,12 @@ const materiasDatos = [
   },
   {
     semestre_recomendado: 1,
-    clave: "AEE-1051",
-    nombre: "Probabilidad y Estadística",
-    cadena_creditos: "3-1-4",
-    horas_teoria: 3,
-    horas_practica: 1,
-    creditos: 4,
-  },
-  {
-    semestre_recomendado: 1,
-    clave: "ELO-1008",
-    nombre: "Desarrollo Humano Integral",
-    cadena_creditos: "0-3-3",
+    clave: "ACA-0907",
+    nombre: "Taller de Ética",
+    cadena_creditos: "0-4-4",
     horas_teoria: 0,
-    horas_practica: 3,
-    creditos: 3,
+    horas_practica: 4,
+    creditos: 4,
   },
   {
     semestre_recomendado: 1,
@@ -61,15 +66,15 @@ const materiasDatos = [
   },
   {
     semestre_recomendado: 1,
-    clave: "ACA-0907",
-    nombre: "Taller de Ética",
-    cadena_creditos: "0-4-4",
-    horas_teoria: 0,
-    horas_practica: 4,
-    creditos: 4,
+    clave: "AEQ-1387", // Actualización de ETQ-1006
+    nombre: "Comunicación Humana",
+    cadena_creditos: "1-2-3",
+    horas_teoria: 1,
+    horas_practica: 2,
+    creditos: 3,
   },
 
-  // ---- Semestre 2 ----
+  // ---------- Semestre 2 ----------
   {
     semestre_recomendado: 2,
     clave: "ACF-0902",
@@ -81,25 +86,25 @@ const materiasDatos = [
   },
   {
     semestre_recomendado: 2,
-    clave: "AEF-1042",
-    nombre: "Mecánica Clásica",
-    cadena_creditos: "3-2-5",
+    clave: "AEE-1051",
+    nombre: "Probabilidad y Estadística",
+    cadena_creditos: "3-1-4",
     horas_teoria: 3,
-    horas_practica: 2,
+    horas_practica: 1,
+    creditos: 4,
+  },
+  {
+    semestre_recomendado: 2,
+    clave: "ACD-0908",
+    nombre: "Desarrollo Sustentable",
+    cadena_creditos: "2-3-5",
+    horas_teoria: 2,
+    horas_practica: 3,
     creditos: 5,
   },
   {
     semestre_recomendado: 2,
-    clave: "AEF-1020",
-    nombre: "Electromagnetismo",
-    cadena_creditos: "3-2-5",
-    horas_teoria: 3,
-    horas_practica: 2,
-    creditos: 5,
-  },
-  {
-    semestre_recomendado: 2,
-    clave: "ELD-1018",
+    clave: "ETD-1021",
     nombre: "Mediciones Eléctricas",
     cadena_creditos: "2-3-5",
     horas_teoria: 2,
@@ -108,28 +113,37 @@ const materiasDatos = [
   },
   {
     semestre_recomendado: 2,
-    clave: "AEA-1013",
-    nombre: "Dibujo Asistido por Computadora",
-    cadena_creditos: "0-4-4",
-    horas_teoria: 0,
-    horas_practica: 4,
-    creditos: 4,
+    clave: "ETF-1027",
+    nombre: "Tópicos Selectos de Física",
+    cadena_creditos: "3-2-5",
+    horas_teoria: 3,
+    horas_practica: 2,
+    creditos: 5,
   },
   {
     semestre_recomendado: 2,
-    clave: "ELQ-1025",
-    nombre: "Tecnología de los Materiales",
+    clave: "ETQ-1009",
+    nombre: "Desarrollo Humano",
     cadena_creditos: "1-2-3",
     horas_teoria: 1,
     horas_practica: 2,
     creditos: 3,
   },
 
-  // ---- Semestre 3 ----
+  // ---------- Semestre 3 ----------
   {
     semestre_recomendado: 3,
     clave: "ACF-0904",
     nombre: "Cálculo Vectorial",
+    cadena_creditos: "3-2-5",
+    horas_teoria: 3,
+    horas_practica: 2,
+    creditos: 5,
+  },
+  {
+    semestre_recomendado: 3,
+    clave: "AEF-1020",
+    nombre: "Electromagnetismo",
     cadena_creditos: "3-2-5",
     horas_teoria: 3,
     horas_practica: 2,
@@ -146,26 +160,8 @@ const materiasDatos = [
   },
   {
     semestre_recomendado: 3,
-    clave: "ELJ-1002",
-    nombre: "Circuitos Eléctricos I",
-    cadena_creditos: "4-2-6",
-    horas_teoria: 4,
-    horas_practica: 2,
-    creditos: 6,
-  },
-  {
-    semestre_recomendado: 3,
-    clave: "ELC-1022",
-    nombre: "Programación",
-    cadena_creditos: "2-2-4",
-    horas_teoria: 2,
-    horas_practica: 2,
-    creditos: 4,
-  },
-  {
-    semestre_recomendado: 3,
-    clave: "ELF-1017",
-    nombre: "Mecánica de Fluidos y Termodinámica",
+    clave: "ETF-1017",
+    nombre: "Física de Semiconductores",
     cadena_creditos: "3-2-5",
     horas_teoria: 3,
     horas_practica: 2,
@@ -173,15 +169,15 @@ const materiasDatos = [
   },
   {
     semestre_recomendado: 3,
-    clave: "ELO-1004",
-    nombre: "Comunicación Humana",
-    cadena_creditos: "0-3-3",
-    horas_teoria: 0,
+    clave: "ETD-1024",
+    nombre: "Programación Estructurada",
+    cadena_creditos: "2-3-5",
+    horas_teoria: 2,
     horas_practica: 3,
-    creditos: 3,
+    creditos: 5,
   },
 
-  // ---- Semestre 4 ----
+  // ---------- Semestre 4 ----------
   {
     semestre_recomendado: 4,
     clave: "ACF-0905",
@@ -193,26 +189,8 @@ const materiasDatos = [
   },
   {
     semestre_recomendado: 4,
-    clave: "ELR-1011",
-    nombre: "Física Moderna",
-    cadena_creditos: "2-1-3",
-    horas_teoria: 2,
-    horas_practica: 1,
-    creditos: 3,
-  },
-  {
-    semestre_recomendado: 4,
-    clave: "ELJ-1003",
-    nombre: "Circuitos Eléctricos II",
-    cadena_creditos: "4-2-6",
-    horas_teoria: 4,
-    horas_practica: 2,
-    creditos: 6,
-  },
-  {
-    semestre_recomendado: 4,
-    clave: "AEF-1021",
-    nombre: "Electrónica Analógica",
+    clave: "ETF-1004",
+    nombre: "Circuitos Eléctricos I",
     cadena_creditos: "3-2-5",
     horas_teoria: 3,
     horas_practica: 2,
@@ -220,26 +198,100 @@ const materiasDatos = [
   },
   {
     semestre_recomendado: 4,
-    clave: "ELE-1026",
-    nombre: "Teoría Electromagnética",
-    cadena_creditos: "3-1-4",
+    clave: "ETP-1020",
+    nombre: "Marco Legal de la Empresa",
+    cadena_creditos: "3-0-3",
     horas_teoria: 3,
-    horas_practica: 1,
-    creditos: 4,
+    horas_practica: 0,
+    creditos: 3,
   },
   {
     semestre_recomendado: 4,
-    clave: "ELC-1019",
-    nombre: "Métodos Numéricos",
-    cadena_creditos: "2-2-4",
-    horas_teoria: 2,
+    clave: "ETF-1003",
+    nombre: "Análisis Numérico",
+    cadena_creditos: "3-2-5",
+    horas_teoria: 3,
     horas_practica: 2,
-    creditos: 4,
+    creditos: 5,
+  },
+  {
+    semestre_recomendado: 4,
+    clave: "ETF-1014",
+    nombre: "Diseño Digital",
+    cadena_creditos: "3-2-5",
+    horas_teoria: 3,
+    horas_practica: 2,
+    creditos: 5,
+  },
+  {
+    semestre_recomendado: 4,
+    clave: "ETD-1025",
+    nombre: "Programación Visual",
+    cadena_creditos: "2-3-5",
+    horas_teoria: 2,
+    horas_practica: 3,
+    creditos: 5,
   },
 
-  // ---- Semestre 5 ----
+  // ---------- Semestre 5 ----------
   {
     semestre_recomendado: 5,
+    clave: "ETF-1005",
+    nombre: "Circuitos Eléctricos II",
+    cadena_creditos: "3-2-5",
+    horas_teoria: 3,
+    horas_practica: 2,
+    creditos: 5,
+  },
+  {
+    semestre_recomendado: 5,
+    clave: "ETF-1012",
+    nombre: "Diodos y Transistores",
+    cadena_creditos: "3-2-5",
+    horas_teoria: 3,
+    horas_practica: 2,
+    creditos: 5,
+  },
+  {
+    semestre_recomendado: 5,
+    clave: "ETF-1026",
+    nombre: "Teoría Electromagnética",
+    cadena_creditos: "3-2-5",
+    horas_teoria: 3,
+    horas_practica: 2,
+    creditos: 5,
+  },
+  {
+    semestre_recomendado: 5,
+    clave: "AEF-1040",
+    nombre: "Máquinas Eléctricas",
+    cadena_creditos: "3-2-5",
+    horas_teoria: 3,
+    horas_practica: 2,
+    creditos: 5,
+  },
+  {
+    semestre_recomendado: 5,
+    clave: "ETF-1015",
+    nombre: "Diseño Digital con VHDL",
+    cadena_creditos: "3-2-5",
+    horas_teoria: 3,
+    horas_practica: 2,
+    creditos: 5,
+  },
+  {
+    semestre_recomendado: 5,
+    clave: "AEO-1388", // Actualización de ETO-1010
+    nombre: "Desarrollo Profesional",
+    cadena_creditos: "0-3-3",
+    horas_teoria: 0,
+    horas_practica: 3,
+    creditos: 3,
+  },
+
+  // ---------- Semestre 6 ----------
+  {
+    semestre_recomendado: 6,
     clave: "AEF-1009",
     nombre: "Control I",
     cadena_creditos: "3-2-5",
@@ -248,56 +300,9 @@ const materiasDatos = [
     creditos: 5,
   },
   {
-    semestre_recomendado: 5,
-    clave: "ELE-1010",
-    nombre: "Equipos Mecánicos",
-    cadena_creditos: "3-1-4",
-    horas_teoria: 3,
-    horas_practica: 1,
-    creditos: 4,
-  },
-  {
-    semestre_recomendado: 5,
-    clave: "ELF-1027",
-    nombre: "Transformadores",
-    cadena_creditos: "3-2-5",
-    horas_teoria: 3,
-    horas_practica: 2,
-    creditos: 5,
-  },
-  {
-    semestre_recomendado: 5,
-    clave: "AEC-1022",
-    nombre: "Electrónica Digital",
-    cadena_creditos: "2-2-4",
-    horas_teoria: 2,
-    horas_practica: 2,
-    creditos: 4,
-  },
-  {
-    semestre_recomendado: 5,
-    clave: "ELC-1013",
-    nombre: "Instalaciones Eléctricas",
-    cadena_creditos: "2-2-4",
-    horas_teoria: 2,
-    horas_practica: 2,
-    creditos: 4,
-  },
-  {
-    semestre_recomendado: 5,
-    clave: "ACD-0908",
-    nombre: "Desarrollo Sustentable",
-    cadena_creditos: "2-3-5",
-    horas_teoria: 2,
-    horas_practica: 3,
-    creditos: 5,
-  },
-
-  // ---- Semestre 6 ----
-  {
     semestre_recomendado: 6,
-    clave: "AEF-1010",
-    nombre: "Control II",
+    clave: "ETF-1013",
+    nombre: "Diseño con Transistores",
     cadena_creditos: "3-2-5",
     horas_teoria: 3,
     horas_practica: 2,
@@ -305,8 +310,8 @@ const materiasDatos = [
   },
   {
     semestre_recomendado: 6,
-    clave: "ELP-1015",
-    nombre: "Legislación en Materia Eléctrica",
+    clave: "ETP-1018",
+    nombre: "Fundamentos Financieros",
     cadena_creditos: "3-0-3",
     horas_teoria: 3,
     horas_practica: 0,
@@ -314,29 +319,11 @@ const materiasDatos = [
   },
   {
     semestre_recomendado: 6,
-    clave: "ELF-1016",
-    nombre: "Máquinas Sincrónicas y de CD",
-    cadena_creditos: "3-2-5",
-    horas_teoria: 3,
-    horas_practica: 2,
-    creditos: 5,
-  },
-  {
-    semestre_recomendado: 6,
-    clave: "ELF-1021",
-    nombre: "Motores de Inducción y Especiales",
-    cadena_creditos: "3-2-5",
-    horas_teoria: 3,
-    horas_practica: 2,
-    creditos: 5,
-  },
-  {
-    semestre_recomendado: 6,
-    clave: "ELF-1014",
-    nombre: "Instalaciones Eléctricas Industriales",
-    cadena_creditos: "3-2-5",
-    horas_teoria: 3,
-    horas_practica: 2,
+    clave: "ETD-1022",
+    nombre: "Microcontroladores",
+    cadena_creditos: "2-3-5",
+    horas_teoria: 2,
+    horas_practica: 3,
     creditos: 5,
   },
   {
@@ -349,11 +336,11 @@ const materiasDatos = [
     creditos: 4,
   },
 
-  // ---- Semestre 7 ----
+  // ---------- Semestre 7 ----------
   {
     semestre_recomendado: 7,
-    clave: "ELF-1005",
-    nombre: "Control de Máquinas Eléctricas",
+    clave: "AEF-1010",
+    nombre: "Control II",
     cadena_creditos: "3-2-5",
     horas_teoria: 3,
     horas_practica: 2,
@@ -361,35 +348,35 @@ const materiasDatos = [
   },
   {
     semestre_recomendado: 7,
-    clave: "ELF-1020",
-    nombre: "Modelado de Sistemas Eléctricos de Potencia",
+    clave: "ETF-1002",
+    nombre: "Amplificadores Operacionales",
     cadena_creditos: "3-2-5",
     horas_teoria: 3,
     horas_practica: 2,
-    creditos: 5,
-  },
-  {
-    semestre_recomendado: 7,
-    clave: "ELE-1001",
-    nombre: "Centrales Eléctricas",
-    cadena_creditos: "3-1-4",
-    horas_teoria: 3,
-    horas_practica: 1,
-    creditos: 4,
-  },
-  {
-    semestre_recomendado: 7,
-    clave: "ELD-1009",
-    nombre: "Electrónica Industrial",
-    cadena_creditos: "2-3-5",
-    horas_teoria: 2,
-    horas_practica: 3,
     creditos: 5,
   },
   {
     semestre_recomendado: 7,
     clave: "AEF-1038",
     nombre: "Instrumentación",
+    cadena_creditos: "3-2-5",
+    horas_teoria: 3,
+    horas_practica: 2,
+    creditos: 5,
+  },
+  {
+    semestre_recomendado: 7,
+    clave: "ETF-1023",
+    nombre: "Optoelectrónica",
+    cadena_creditos: "3-2-5",
+    horas_teoria: 3,
+    horas_practica: 2,
+    creditos: 5,
+  },
+  {
+    semestre_recomendado: 7,
+    clave: "ETF-1019",
+    nombre: "Introducción a las Telecomunicaciones",
     cadena_creditos: "3-2-5",
     horas_teoria: 3,
     horas_practica: 2,
@@ -405,38 +392,11 @@ const materiasDatos = [
     creditos: 4,
   },
 
-  // ---- Semestre 8 ----
+  // ---------- Semestre 8 ----------
   {
     semestre_recomendado: 8,
-    clave: "ELC-1007",
-    nombre: "Costos y Presupuesto de Proyectos",
-    cadena_creditos: "2-2-4",
-    horas_teoria: 2,
-    horas_practica: 2,
-    creditos: 4,
-  },
-  {
-    semestre_recomendado: 8,
-    clave: "ELQ-1012",
-    nombre: "Gestión Empresarial y Liderazgo",
-    cadena_creditos: "1-2-3",
-    horas_teoria: 1,
-    horas_practica: 2,
-    creditos: 3,
-  },
-  {
-    semestre_recomendado: 8,
-    clave: "ELD-1006",
-    nombre: "Controlador Lógico Programable",
-    cadena_creditos: "2-3-5",
-    horas_teoria: 2,
-    horas_practica: 3,
-    creditos: 5,
-  },
-  {
-    semestre_recomendado: 8,
-    clave: "ELF-1023",
-    nombre: "Pruebas y Mantenimiento Eléctrico",
+    clave: "ETF-1007",
+    nombre: "Control Digital",
     cadena_creditos: "3-2-5",
     horas_teoria: 3,
     horas_practica: 2,
@@ -444,18 +404,45 @@ const materiasDatos = [
   },
   {
     semestre_recomendado: 8,
-    clave: "ELC-1024",
-    nombre: "Sistemas de Iluminación",
-    cadena_creditos: "2-2-4",
-    horas_teoria: 2,
+    clave: "ETF-1008",
+    nombre: "Controladores Lógicos Programables",
+    cadena_creditos: "3-2-5",
+    horas_teoria: 3,
     horas_practica: 2,
-    creditos: 4,
+    creditos: 5,
+  },
+  {
+    semestre_recomendado: 8,
+    clave: "ETF-1016",
+    nombre: "Electrónica de Potencia",
+    cadena_creditos: "3-2-5",
+    horas_teoria: 3,
+    horas_practica: 2,
+    creditos: 5,
+  },
+  {
+    semestre_recomendado: 8,
+    clave: "ETR-1001",
+    nombre: "Administración Gerencial",
+    cadena_creditos: "2-1-3",
+    horas_teoria: 2,
+    horas_practica: 1,
+    creditos: 3,
   },
 
-  // ---- Semestre 9 (Residencia) ----
+  // ---------- Semestre 9 ----------
   {
     semestre_recomendado: 9,
-    clave: "RES-IELE-2010-209",
+    clave: "AEO-1389", // Actualización de ETO-1011
+    nombre: "Desarrollo y Evaluación de Proyectos",
+    cadena_creditos: "0-3-3",
+    horas_teoria: 0,
+    horas_practica: 3,
+    creditos: 3,
+  },
+  {
+    semestre_recomendado: 9,
+    clave: "RES-IELC-2010-211",
     nombre: "Residencia Profesional",
     cadena_creditos: "0-0-10",
     horas_teoria: 0,
@@ -470,24 +457,21 @@ async function main() {
     console.log("Conectado a MongoDB");
 
     // 1. Buscar Tec
-    const tec = await Tec.findOne({
-      nombre: "Instituto Tecnológico de Aguascalientes",
-    });
+    const tec = await Tec.findOne({ nombre: TEC_NOMBRE });
 
     if (!tec) {
-      console.error(" No se encontró el Tec. Revisa el nombre en la BD.");
+      console.error("No se encontró el Tec. Verifica el nombre o créalo primero.");
       return;
     }
 
     // 2. Buscar Carrera
     const carrera = await Carrera.findOne({
-      nombre: "Ingeniería Eléctrica",
+      nombre: CARRERA_NOMBRE,
       tec: tec._id,
     });
 
     if (!carrera) {
-      console.error(
-        " No se encontró la carrera. Revisa el nombre o crea la carrera primero."
+      console.error("No se encontró la carrera. Verifica el nombre o créala primero."
       );
       return;
     }
@@ -508,22 +492,28 @@ async function main() {
           tec: tec._id,
           carrera: carrera._id,
           tipo_unidad: "Curso",
-          area_materia: "Basica",
+          area_materia: "Basica", // Ajustar si es especialidad
           es_modulo_especialidad: false,
-          plan_anio: 2010,
+          plan_anio: PLAN_ANIO,
         },
         { new: true, upsert: true }
       );
 
-      console.log("Materia guardada:", materia.semestre_recomendado, materia.clave, "-", materia.nombre);
+      console.log(
+        "Materia guardada:",
+        materia.semestre_recomendado,
+        materia.clave,
+        "-",
+        materia.nombre
+      );
     }
 
-    console.log("Materias de Ingeniería Eléctrica IELE-2010-209 guardadas.");
+    console.log("Materias de Ingeniería Electrónica IELC-2010-211 guardadas.");
   } catch (err) {
     console.error("Error:", err);
   } finally {
     await mongoose.disconnect();
-    console.log(" Desconectado de MongoDB");
+    console.log("Desconectado de MongoDB");
   }
 }
 
