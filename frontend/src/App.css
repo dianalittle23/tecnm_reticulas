@@ -1,5 +1,5 @@
 :root {
-  /* Paleta base */
+  /* Paleta base ORIGINAL */
   --primary: #0d1253;        /* morado principal */
   --primary-light: #832eb4;  /* morado claro */
   --primary-alt: #832eb4;    /* morado más vivo */
@@ -17,77 +17,125 @@
 
   --radius-lg: 18px;
   --radius-md: 10px;
+
+  /* Derivados para el efecto glass pero con tus colores */
+  --bg-elevated: rgba(16, 20, 43, 0.96);  /* basado en --bg-card */
+  --bg-soft: rgba(16, 20, 43, 0.8);
 }
 
 /* ===== GENERAL ===== */
 
 body {
   margin: 0;
-  background: radial-gradient(circle at top, #080d25 0, #050716 45%, #050716 100%);
+  min-height: 100vh;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--text);
   font-size: 16px;
+  background:
+    radial-gradient(circle at 0% 0%, #1e2238 0, transparent 45%),
+    radial-gradient(circle at 100% 0%, #261143 0, transparent 45%),
+    radial-gradient(circle at 50% 100%, #050716 0, #050716 60%);
 }
 
 /* Contenedor principal */
 .app {
-  max-width: 1600px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 30px 24px 40px;
+  padding: 32px 20px 40px;
   font-size: 1.02rem;
 }
 
 /* ===== HEADER ===== */
 
 .app-header {
+  position: relative;
+  overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 22px 26px;
+  padding: 26px 28px;
   margin-bottom: 28px;
-  border-radius: 999px;
-  background: linear-gradient(120deg, var(--primary-light), var(--primary), var(--primary-alt));
-  box-shadow: var(--shadow);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 32px;
+  background: radial-gradient(circle at 0% 0%, #832eb4 0, transparent 55%),
+              radial-gradient(circle at 100% 0%, #0d1253 0, transparent 50%),
+              linear-gradient(120deg, #050716, #050716);
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(131, 46, 180, 0.8);
+}
+
+.app-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 120%, rgba(194, 181, 255, 0.3), transparent 60%);
+  opacity: 0.9;
+  pointer-events: none;
 }
 
 .header-title {
+  position: relative;
   text-align: center;
+  z-index: 1;
 }
 
 .header-title h1 {
   margin: 0;
-  font-size: 30px;
+  font-size: 32px;
   font-weight: 800;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  color: var(--text);
 }
 
 .header-title p {
-  margin: 6px 0 0;
+  margin: 8px 0 0;
   font-size: 14px;
-  color: #e2e5ff;
-  opacity: 0.85;
+  color: var(--text-soft);
+  opacity: 0.9;
 }
 
 /* ===== SECCIONES GENERALES ===== */
 
 .section-title {
-  font-size: 1.3rem;
+  font-size: 1.22rem;
   font-weight: 700;
   margin: 0 0 12px;
-  color: #e9ebff;
+  color: var(--text);
+}
+
+/* versión compacta para tarjetas pequeñas */
+.section-title-small {
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-soft);
 }
 
 /* ===== TARJETA DE FILTROS ===== */
 
 .filters-card {
-  background: linear-gradient(135deg, #10142b, #10142b);
+  background: var(--bg-elevated);
   border-radius: var(--radius-lg);
   padding: 20px 22px 18px;
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
-  margin-bottom: 26px;
+  margin-bottom: 24px;
+  backdrop-filter: blur(18px);
 }
+/* Hacer que filtros y resultados ocupen el mismo ancho */
+.layout-dos-columnas {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 50% + 50% */
+  gap: 18px;
+  align-items: start;
+}
+
+/* Para pantallas chicas, se apilan */
+@media (max-width: 900px) {
+  .layout-dos-columnas {
+    grid-template-columns: 1fr;
+  }
+}
+
 
 .filters-grid {
   display: grid;
@@ -98,18 +146,18 @@ body {
 .field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   align-items: flex-start;
 }
 
 .field label {
-  font-size: 0.95rem;
-  color: var(--text-muted);
+  font-size: 0.9rem;
+  color: var(--text-soft);
 }
 
 .field label strong {
-  font-weight: 700;
-  color: #ffffff;
+  font-weight: 600;
+  color: var(--text-muted);
 }
 
 /* inputs y selects */
@@ -117,30 +165,33 @@ body {
 .field select,
 .field input {
   width: 100%;
-  padding: 8px 10px;
+  padding: 9px 11px;
   border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-  background: #832eb4;
-  color: #ffffff;           /* TEXTO BLANCO */
+  border: 1px solid rgba(131, 46, 180, 0.7);
+  background: radial-gradient(circle at 0 0, rgba(131, 46, 180, 0.22), #050716);
+  color: var(--text);
   font-size: 14px;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease,
+    transform 0.08s ease;
 }
 
-/* Placeholders blancos/gris claro */
 .field select::placeholder,
 .field input::placeholder {
-  color: #f3eaff;
+  color: #e8ddff;
 }
 
 .field select:focus,
 .field input:focus {
   outline: none;
   border-color: var(--primary-light);
-  box-shadow: 0 0 0 2px rgba(120, 116, 169, 0.45);
+  box-shadow: 0 0 0 1px rgba(131, 46, 180, 0.9), 0 14px 30px rgba(0, 0, 0, 0.9);
+  background: radial-gradient(circle at 100% 0, rgba(131, 46, 180, 0.24), #050716);
+  transform: translateY(-1px);
 }
 
 /* === BLOQUE DE MATERIAS PARA GRÁFICO (derecha) === */
 .campos-grafico {
-  grid-column: 3 / 5;            /* columnas 3 y 4 de la grid */
+  grid-column: 3 / 5;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -151,9 +202,9 @@ body {
 .field-checkbox .checkbox-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   margin-top: 2px;
-  font-size: 13px;
+  font-size: 0.82rem;
   color: var(--text-soft);
 }
 
@@ -163,7 +214,7 @@ body {
 
 /* === BOTONES (una fila completa abajo) === */
 .field-button {
-  grid-column: 1 / -1;           /* ocupa toda la fila */
+  grid-column: 1 / -1;
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
@@ -174,27 +225,57 @@ body {
 
 /* botón principal */
 .primary-button {
-  background: radial-gradient(circle at 30% 0%, #ffffff 0, #f0d5ff 25%, #832eb4 100%);
+  background: radial-gradient(circle at 30% 0%, #ffffff 0, #f0d5ff 20%, #832eb4 100%);
   color: #1a1024;
   font-weight: 700;
   font-size: 14px;
-  padding: 10px 26px;
+  padding: 9px 24px;
   border-radius: 999px;
   border: none;
   cursor: pointer;
-  box-shadow: 0 12px 24px rgba(153, 83, 238, 0.311);
-  transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+  box-shadow: 0 16px 32px rgba(92, 45, 141, 0.8);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease,
+    letter-spacing 0.16s ease;
+  white-space: nowrap;
 }
 
 .primary-button:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1.5px);
   filter: brightness(1.04);
-  box-shadow: 0 16px 30px rgba(56, 46, 183, 0.75);
+  box-shadow: 0 20px 40px rgba(92, 45, 141, 0.95);
+  letter-spacing: 0.02em;
 }
 
 .primary-button:active {
   transform: translateY(0);
-  box-shadow: 0 10px 18px rgba(56, 46, 183, 0.55);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.9);
+}
+
+/* botón secundario (Ver retícula) */
+.secondary-button {
+  background: transparent;
+  color: var(--text-soft);
+  border: 1px solid rgba(131, 46, 180, 0.8);
+  box-shadow: none;
+}
+
+.secondary-button:hover {
+  background: radial-gradient(circle at 0 0, rgba(131, 46, 180, 0.18), transparent 60%);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.9);
+}
+
+/* ===== LAYOUT DASHBOARD (DOS COLUMNAS) ===== */
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.25fr);
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.dashboard-column-left,
+.dashboard-column-right {
+  min-width: 0;
 }
 
 /* ===== RESUMEN CARRERA ===== */
@@ -204,29 +285,32 @@ body {
 }
 
 .career-summary-card {
-  background: radial-gradient(circle at top left, rgba(124, 46, 183, 0.4) 0, #10142b 40%);
+  background: radial-gradient(circle at top left, rgba(131, 46, 180, 0.35) 0, transparent 52%),
+              radial-gradient(circle at 100% 0, rgba(34, 33, 88, 0.4) 0, transparent 55%),
+              var(--bg-card);
   border-radius: var(--radius-lg);
   padding: 16px 20px;
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
   margin-bottom: 16px;
+  backdrop-filter: blur(18px);
 }
 
 .career-summary-card h2 {
   margin: 0 0 6px;
-  font-size: 1.4rem;
+  font-size: 1.32rem;
 }
 
 .career-summary-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
-  font-size: 1rem;
-  color: var(--text-muted);
+  gap: 12px;
+  font-size: 0.92rem;
+  color: var(--text-soft);
 }
 
 .career-summary-tags strong {
-  color: #ffffff;
+  color: var(--text-muted);
 }
 
 /* ===== RETÍCULA POR SEMESTRE ===== */
@@ -237,7 +321,10 @@ body {
 }
 
 .reticula-header-row .section-title {
-  font-size: 16px;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-soft);
 }
 
 .semestres-grid {
@@ -256,9 +343,9 @@ body {
 
 .semestre-title {
   margin: 0 0 8px;
-  font-size: 1.05rem;
+  font-size: 1.02rem;
   font-weight: 600;
-  color: #d8dbff;
+  color: var(--text);
   text-align: center;
 }
 
@@ -272,10 +359,17 @@ body {
 
 .materia-item {
   background: var(--bg-card-soft);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 8px 9px;
   margin-bottom: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+}
+
+.materia-item:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 14px 26px rgba(0, 0, 0, 0.9);
 }
 
 .materia-header {
@@ -285,9 +379,9 @@ body {
 }
 
 .materia-clave {
-  font-size: 0.9rem;
+  font-size: 0.86rem;
   font-weight: 600;
-  color: #9fb3ff;
+  color: #e2e7ff;
 }
 
 .materia-nombre {
@@ -312,12 +406,13 @@ body {
 .especialidad-section {
   margin-top: 22px;
   padding-top: 10px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid rgba(131, 46, 180, 0.8);
 }
 
 .especialidad-bloque {
   margin-bottom: 16px;
-  background: radial-gradient(circle at top right, rgba(46, 105, 183, 0.4) 0, #10142b 40%);
+  background: radial-gradient(circle at top right, rgba(131, 46, 180, 0.4) 0, transparent 55%),
+              var(--bg-card);
   border-radius: var(--radius-lg);
   padding: 12px 14px;
   border: 1px solid var(--border);
@@ -326,9 +421,9 @@ body {
 
 .especialidad-title {
   margin: 0 0 6px;
-  font-size: 15px;
+  font-size: 0.98rem;
   font-weight: 600;
-  color: #e2e4ff;
+  color: var(--text-muted);
 }
 
 /* ===== TABLA DE RESULTADOS ===== */
@@ -339,6 +434,7 @@ body {
   border: 1px solid var(--border);
   padding: 16px 18px 18px;
   box-shadow: var(--shadow);
+  margin-top: 4px;
 }
 
 .tabla-wrapper {
@@ -361,15 +457,21 @@ body {
   padding: 8px 8px;
   text-align: left;
   font-weight: 600;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.6);
 }
 
 .result-table tbody td {
-  padding: 6px 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 7px 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .result-table tbody tr:nth-child(even) {
   background: rgba(255, 255, 255, 0.02);
+}
+
+.result-table tbody tr:hover {
+  background: rgba(131, 46, 180, 0.3);
+  transition: background 0.12s ease;
 }
 
 .empty-text {
@@ -381,7 +483,7 @@ body {
 /* ===== SECCIÓN GRÁFICA ===== */
 
 .grafica-section {
-  margin-top: 26px;
+  margin-top: 24px;
   background: var(--bg-card);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
@@ -389,7 +491,7 @@ body {
   box-shadow: var(--shadow);
 }
 
-/* ===== GRID DE GRÁFICAS (tipo dashboard) ===== */
+/* ===== GRID DE GRÁFICAS ===== */
 
 .charts-grid {
   display: grid;
@@ -399,18 +501,19 @@ body {
 }
 
 .chart-card {
-  background: radial-gradient(circle at top left, rgba(130, 46, 180, 0.22) 0, #10142b 45%);
+  background: radial-gradient(circle at top left, rgba(131, 46, 180, 0.3) 0, transparent 55%),
+              var(--bg-card);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
-  padding: 12px 14px 10px;
+  padding: 12px 14px 12px;
 }
 
 .chart-card h3 {
   margin: 0 0 4px;
   font-size: 1rem;
   font-weight: 600;
-  color: #f8f7ff;
+  color: var(--text);
 }
 
 .chart-subtitle {
@@ -419,11 +522,96 @@ body {
   color: var(--text-soft);
 }
 
-/* Ajuste para los tooltips de Recharts (que no rompan el diseño) */
+/* Ajuste para los tooltips de Recharts */
 .recharts-default-tooltip {
   font-size: 0.8rem;
 }
 
+/* layout gráfico doble (si lo usas) */
+.chart-duo {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.chart-half {
+  width: 100%;
+  height: 220px;
+}
+
+/* ===== PIE DE TABLA Y PAGINACIÓN ===== */
+
+.tabla-footer {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: var(--text-soft);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-page {
+  font-size: 0.82rem;
+  color: var(--text-soft);
+}
+
+/* input de número de página */
+.pagination input[type="number"] {
+  width: 64px;
+  padding: 4px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: #050716;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+/* Botones de paginación */
+.pagination-button {
+  padding: 6px 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(131, 46, 180, 0.9);
+  background: #050716;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.95);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.pagination-button:hover {
+  background: radial-gradient(circle at 30% 0%, #ffffff 0, #f0d5ff 20%, #832eb4 100%);
+  border-color: #f0d5ff;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.9);
+}
+
+.pagination-button:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.95);
+}
+
+/* deshabilitado */
+.pagination-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+  background: #050716;
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: none;
+}
 
 /* ===== RESPONSIVE ===== */
 
@@ -433,11 +621,11 @@ body {
   }
 
   .app-header {
-    border-radius: 22px;
+    border-radius: 24px;
   }
 
   .campos-grafico {
-    grid-column: 1 / -1;        /* ocupa toda la fila en tablets */
+    grid-column: 1 / -1;
   }
 
   .field-button {
@@ -449,6 +637,18 @@ body {
   .charts-grid {
     grid-template-columns: 1fr;
   }
+
+  .chart-duo {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-half {
+    height: 220px;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 600px) {
@@ -458,6 +658,10 @@ body {
 
   .field-button {
     justify-content: flex-start;
+  }
+
+  .app {
+    padding-inline: 14px;
   }
 }
 
@@ -473,25 +677,23 @@ body {
 .campos-grafico input {
   width: 100%;
 }
-/* layout dentro de la tarjeta del gráfico 1 (barra + pastel lado a lado) */
-.chart-duo {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 12px;
-  align-items: center;
+/* ===== ARREGLO PARA LOS DESPLEGABLES (Estado, Tec, Carrera) ===== */
+.field select {
+  background-color: #10142b;   /* mismo que --bg-card */
+  color: #f8f7ff;              /* texto blanco */
 }
 
-.chart-half {
-  width: 100%;
-  height: 220px;
+/* Estilo de las opciones del menú desplegable */
+.field select option {
+  background-color: #10142b;   /* fondo oscuro en la lista */
+  color: #f8f7ff;              /* texto blanco */
 }
 
-@media (max-width: 900px) {
-  .chart-duo {
-    grid-template-columns: 1fr;
-  }
-
-  .chart-half {
-    height: 220px;
-  }
+/* Opción enfocada / seleccionada en la lista */
+.field select option:checked,
+.field select option:focus {
+  background-color: #832eb4;   /* morado claro cuando se selecciona */
+  color: #ffffff;
 }
+
+

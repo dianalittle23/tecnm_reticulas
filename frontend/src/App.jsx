@@ -1,6 +1,15 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { API_URL } from "./config";
 import "./App.css";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 // URL BASE backend en Railway
 const API_BASE = `${API_URL}/api`;
@@ -37,9 +46,19 @@ function App() {
 
   const [reticulaMaterias, setReticulaMaterias] = useState([]);
 
+  // Materias para la gráfica de la opción 2
+  const [grafMateria1, setGrafMateria1] = useState("");
+  const [grafMateria2, setGrafMateria2] = useState("");
+  const [grafMateria3, setGrafMateria3] = useState("");
+
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10; // 10 materias por página
+
   // refs para scroll
   const tablaRef = useRef(null);
   const reticulaRef = useRef(null);
+  const graficaRef = useRef(null);
 
   // Cargar tecs al iniciar
   useEffect(() => {
@@ -70,6 +89,7 @@ function App() {
 
     fetchJson(`${API_BASE}/materias`, params).then((data) => {
       setMaterias(data);
+      setCurrentPage(1); // resetear a la primera página
 
       if (tablaRef.current) {
         tablaRef.current.scrollIntoView({
@@ -78,6 +98,26 @@ function App() {
         });
       }
     });
+  };
+
+  // Limpiar filtros, resultados y gráfica
+  const limpiarFiltros = () => {
+    setFiltroEstado("");
+    setFiltroTec("");
+    setFiltroCarrera("");
+    setFiltroNombre("");
+    setFiltroClave("");
+    setSoloEspecialidad(false);
+
+    setGrafMateria1("");
+    setGrafMateria2("");
+    setGrafMateria3("");
+
+    setMaterias([]);
+    setReticulaMaterias([]);
+    setCurrentPage(1);
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Cargar TODAS las materias de la carrera seleccionada (retícula)
@@ -144,6 +184,45 @@ function App() {
     return map;
   }, [materiasEspecialidad]);
 
+  // ==== DATOS DE LA GRÁFICA PRINCIPAL (OPCIÓN 2) ====
+  const datosDistribucionMaterias = useMemo(() => {
+    if (!materias.length) return [];
+
+    const nombresBuscados = [grafMateria1, grafMateria2, grafMateria3]
+      .map((n) => n.trim())
+      .filter(Boolean);
+
+    if (!nombresBuscados.length) return [];
+
+    // Todas las carreras distintas que aparecen en LOS RESULTADOS
+    const carrerasTotales = new Set(
+      materias.map((m) => m.carrera?.nombre).filter(Boolean)
+    );
+    const totalCarreras = carrerasTotales.size || 1;
+
+    return nombresBuscados.map((nombreMateria) => {
+      const carrerasConEsaMateria = new Set();
+
+      materias.forEach((m) => {
+        const nombre = (m.nombre || "").toLowerCase();
+        const buscado = nombreMateria.toLowerCase();
+
+        if (nombre.includes(buscado) && m.carrera?.nombre) {
+          carrerasConEsaMateria.add(m.carrera.nombre);
+        }
+      });
+
+      const cantidadCarreras = carrerasConEsaMateria.size;
+      const porcentaje = ((cantidadCarreras / totalCarreras) * 100).toFixed(1);
+
+      return {
+        materia: nombreMateria,
+        carreras: cantidadCarreras,
+        porcentaje: Number(porcentaje),
+      };
+    });
+  }, [materias, grafMateria1, grafMateria2, grafMateria3]);
+
   // Scroll a especialidad cuando se marca la casilla
   useEffect(() => {
     if (soloEspecialidad) {
@@ -153,6 +232,36 @@ function App() {
       }, 0);
     }
   }, [soloEspecialidad]);
+
+  // ==== PAGINACIÓN: materias de la página actual ====
+  const totalPages = Math.max(1, Math.ceil(materias.length / pageSize));
+  const inicio = (currentPage - 1) * pageSize;
+  const fin = Math.min(inicio + pageSize, materias.length);
+  const materiasPaginaActual = materias.slice(inicio, fin);
+
+  // Si cambia el número total de páginas y la actual se sale del rango
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
+
+  const irAPagina = (value) => {
+    if (!value) return;
+    const num = Number(value);
+    if (Number.isNaN(num)) return;
+    const safe = Math.min(Math.max(1, num), totalPages);
+    setCurrentPage(safe);
+  };
+
+  const irAGrafica = () => {
+    if (graficaRef.current) {
+      graficaRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  };
 
   return (
     <div className="app">
@@ -164,9 +273,11 @@ function App() {
         </div>
       </header>
 
-      {/* TARJETA DE FILTROS */}
+      {/* FILTROS DE BÚSQUEDA */}
       <section className="filters-card">
-        <h2 className="section-title">Filtros de búsqueda</h2>
+        <h2 className="section-title">
+          Filtros de búsqueda
+        </h2>
         <div className="filters-grid">
           {/* ESTADO */}
           <div className="field">
@@ -271,6 +382,31 @@ function App() {
             </div>
           </div>
 
+          {/* MATERIAS PARA LA GRÁFICA (OPCIÓN 2) */}
+          <div className="field campos-grafico">
+            <label>
+              <strong>Materias a analizar</strong>
+            </label>
+            <input
+              type="text"
+              value={grafMateria1}
+              onChange={(e) => setGrafMateria1(e.target.value)}
+              placeholder='Materia 1 (ej. "Álgebra Lineal")'
+            />
+            <input
+              type="text"
+              value={grafMateria2}
+              onChange={(e) => setGrafMateria2(e.target.value)}
+              placeholder='Materia 2 (ej. "Cálculo Integral")'
+            />
+            <input
+              type="text"
+              value={grafMateria3}
+              onChange={(e) => setGrafMateria3(e.target.value)}
+              placeholder="Materia 3 (opcional)"
+            />
+          </div>
+
           {/* BOTONES */}
           <div className="field-button botones-filtros">
             <button className="primary-button" onClick={buscarMaterias}>
@@ -278,7 +414,7 @@ function App() {
             </button>
 
             <button
-              className="primary-button"
+              className="primary-button secondary-button"
               type="button"
               onClick={() => {
                 if (!filtroCarrera) {
@@ -295,11 +431,127 @@ function App() {
             >
               Ver retícula
             </button>
+
+            <button
+              className="primary-button secondary-button"
+              type="button"
+              onClick={limpiarFiltros}
+            >
+              Limpiar
+            </button>
+
+            <button
+              className="primary-button secondary-button"
+              type="button"
+              onClick={irAGrafica}
+            >
+              Ver gráfica
+            </button>
           </div>
         </div>
       </section>
 
-      {/* RESUMEN CARRERA + RETÍCULA */}
+      {/* RESULTADOS DE LA BÚSQUEDA (justo debajo de filtros) */}
+      <section className="tabla-section" ref={tablaRef}>
+        <h2 className="section-title">Resultados de la búsqueda</h2>
+        <div className="tabla-wrapper">
+          <table className="result-table">
+            <thead>
+              <tr>
+                <th>Clave</th>
+                <th>Nombre de materia</th>
+                <th>Créditos</th>
+                <th>Semestre</th>
+                <th>Especialidad</th>
+                <th>Prerrequisitos</th>
+                <th>Estado</th>
+                <th>Tec</th>
+                <th>Carrera</th>
+              </tr>
+            </thead>
+            <tbody>
+              {materiasPaginaActual.map((m) => {
+                const estadoTec =
+                  tecs.find((t) => t._id === m.tec?._id)?.estado || "—";
+
+                return (
+                  <tr key={m._id}>
+                    <td>{m.clave}</td>
+                    <td>{m.nombre}</td>
+                    <td>{m.creditos}</td>
+                    <td>{m.semestre_recomendado}</td>
+                    <td>{m.es_modulo_especialidad ? "Sí" : "No"}</td>
+                    <td>
+                      {m.prerrequisitos?.length > 0
+                        ? m.prerrequisitos.map((p) => p.clave).join(", ")
+                        : "—"}
+                    </td>
+                    <td>{estadoTec}</td>
+                    <td>{m.tec?.nombre}</td>
+                    <td>{m.carrera?.nombre}</td>
+                  </tr>
+                );
+              })}
+              {materias.length === 0 && (
+                <tr>
+                  <td colSpan="9" className="empty-text">
+                    Usa los filtros de arriba y presiona <b>Buscar</b> para ver
+                    materias.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* PIE DE TABLA CON PAGINACIÓN */}
+        {materias.length > 0 && (
+          <div className="tabla-footer">
+            <span>
+              Mostrando <b>{inicio + 1}</b> – <b>{fin}</b> de{" "}
+              <b>{materias.length}</b> materias
+            </span>
+
+            <div className="pagination">
+              <button
+                className="pagination-button"
+                type="button"
+                onClick={() =>
+                  setCurrentPage((prev) => Math.max(1, prev - 1))
+                }
+                disabled={currentPage === 1}
+              >
+                Anterior
+              </button>
+
+              <span className="pagination-page">
+                Página{" "}
+                <input
+                  type="number"
+                  min={1}
+                  max={totalPages}
+                  value={currentPage}
+                  onChange={(e) => irAPagina(e.target.value)}
+                />{" "}
+                de {totalPages}
+              </span>
+
+              <button
+                className="pagination-button"
+                type="button"
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                }
+                disabled={currentPage === totalPages}
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* RETÍCULA (debajo de resultados) */}
       {filtroCarrera && (
         <section className="reticula-section" ref={reticulaRef}>
           {carreraSeleccionada && (
@@ -354,9 +606,7 @@ function App() {
                           <div className="materia-prerreq">
                             Prerrequisitos:{" "}
                             {m.prerrequisitos?.length
-                              ? m.prerrequisitos
-                                  .map((p) => p.clave)
-                                  .join(", ")
+                              ? m.prerrequisitos.map((p) => p.clave).join(", ")
                               : "Ninguno"}
                           </div>
                         </li>
@@ -402,52 +652,88 @@ function App() {
         </section>
       )}
 
-      {/* TABLA DE RESULTADOS */}
-      <section className="tabla-section" ref={tablaRef}>
-        <h2 className="section-title">Resultados de la búsqueda</h2>
-        <div className="tabla-wrapper">
-          <table className="result-table">
-            <thead>
-              <tr>
-                <th>Clave</th>
-                <th>Nombre</th>
-                <th>Créditos</th>
-                <th>Semestre</th>
-                <th>Especialidad</th>
-                <th>Prerrequisitos</th>
-                <th>Tec</th>
-                <th>Carrera</th>
-              </tr>
-            </thead>
-            <tbody>
-              {materias.map((m) => (
-                <tr key={m._id}>
-                  <td>{m.clave}</td>
-                  <td>{m.nombre}</td>
-                  <td>{m.creditos}</td>
-                  <td>{m.semestre_recomendado}</td>
-                  <td>{m.es_modulo_especialidad ? "Sí" : "No"}</td>
-                  <td>
-                    {m.prerrequisitos?.length > 0
-                      ? m.prerrequisitos.map((p) => p.clave).join(", ")
-                      : "—"}
-                  </td>
-                  <td>{m.tec?.estado}</td>
-                  <td>{m.tec?.nombre}</td>
-                  <td>{m.carrera?.nombre}</td>
-                </tr>
-              ))}
-              {materias.length === 0 && (
-                <tr>
-                  <td colSpan="9" className="empty-text">
-                    Usa los filtros de arriba y presiona <b>Buscar</b> para ver
-                    materias.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+      {/* GRÁFICA PRINCIPAL – A TODO EL ANCHO */}
+      <section className="grafica-section grafica-full" ref={graficaRef}>
+        <h2 className="section-title">Análisis de materias</h2>
+
+        {materias.length === 0 ? (
+          <p className="empty-text">
+            Realiza una búsqueda para ver la gráfica basada en los resultados.
+          </p>
+        ) : datosDistribucionMaterias.length === 0 ? (
+          <p className="empty-text">
+            Escribe al menos una materia en los campos{" "}
+            <b>"Materias a analizar"</b> para ver el porcentaje de carreras
+            donde aparece.
+          </p>
+        ) : (
+          <div className="chart-card">
+            <h3>Porcentaje de carreras donde aparece cada materia</h3>
+            <p className="chart-subtitle">
+              Sobre el total de carreras que aparecen en los resultados de la
+              búsqueda actual.
+            </p>
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart
+                data={datosDistribucionMaterias}
+                layout="vertical"
+                margin={{ top: 10, right: 20, left: 80, bottom: 10 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="rgba(255,255,255,0.25)"
+                />
+                <XAxis
+                  type="number"
+                  domain={[0, 100]}
+                  tick={{ fontSize: 12, fill: "#f8f7ff" }}
+                  stroke="#f8f7ff"
+                  label={{
+                    value: "Porcentaje de carreras (%)",
+                    position: "insideBottom",
+                    offset: -5,
+                    fontSize: 12,
+                    fill: "#f8f7ff",
+                  }}
+                />
+                <YAxis
+                  dataKey="materia"
+                  type="category"
+                  tick={{ fontSize: 12, fill: "#f8f7ff" }}
+                  stroke="#f8f7ff"
+                />
+                <Tooltip
+                  formatter={(value, name) => {
+                    if (name === "porcentaje") {
+                      return [`${value}%`, "Porcentaje"];
+                    }
+                    if (name === "carreras") {
+                      return [`${value} carreras`, "Carreras"];
+                    }
+                    return [value, name];
+                  }}
+                  labelFormatter={(label, payload) => {
+                    const row = payload && payload[0] && payload[0].payload;
+                    if (!row) return label;
+                    return `${row.materia} – ${row.carreras} carreras (${row.porcentaje}%)`;
+                  }}
+                  contentStyle={{
+                    background: "#050716",
+                    border: "1px solid #832eb4",
+                    borderRadius: 8,
+                    color: "#f8f7ff",
+                  }}
+                />
+                <Bar
+                  dataKey="porcentaje"
+                  name="Porcentaje"
+                  fill="#7dd3fc" // azul claro
+                  radius={[0, 6, 6, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </section>
     </div>
   );
