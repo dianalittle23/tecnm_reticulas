@@ -378,7 +378,7 @@ body {
   padding: 10px 0;
 }
 
-/* ===== SECCIÓN GRÁFICA (opcional, por si quieres darle estilo extra) ===== */
+/* ===== SECCIÓN GRÁFICA ===== */
 
 .grafica-section {
   margin-top: 26px;
@@ -389,106 +389,6 @@ body {
   box-shadow: var(--shadow);
 }
 
-/* ===== RESPONSIVE ===== */
-
-@media (max-width: 900px) {
-  .filters-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .app-header {
-    border-radius: 22px;
-  }
-
-  .campos-grafico {
-    grid-column: 1 / -1;        /* ocupa toda la fila en tablets */
-  }
-
-  .field-button {
-    grid-column: 1 / -1;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-  }
-}
-
-@media (max-width: 600px) {
-  .filters-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .field-button {
-    justify-content: flex-start;
-  }
-}
-
-/* ===== BOTONES EN LA TARJETA DE FILTROS ===== */
-.botones-filtros {
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  gap: 12px;
-}
-
-/* Campos de materias para gráfico alineados en columna */
-.campos-grafico {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.campos-grafico input {
-  width: 100%;
-}
-
-/* ===== SECCIÓN DEL GRÁFICO ===== */
-
-.grafica-section {
-  margin-top: 20px;
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
-  padding: 16px 18px 20px;
-  box-shadow: var(--shadow);
-}
-
-.grafica-barras {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.barra-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.barra-label {
-  width: 220px;
-  font-size: 0.95rem;
-}
-
-.barra-track {
-  flex: 1;
-  background: #151a35;
-  border-radius: 999px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-}
-
-.barra-fill {
-  height: 24px;
-  display: flex;
-  align-items: center;
-  padding: 0 10px;
-  background: linear-gradient(
-    90deg,
-    var(--primary-light),
-    var(--primary-alt)
-  );
-  white-space: nowrap;
-}
 /* ===== GRID DE GRÁFICAS (tipo dashboard) ===== */
 
 .charts-grid {
@@ -524,9 +424,101 @@ body {
   font-size: 0.8rem;
 }
 
-/* En pantallas pequeñas, una sola columna de charts */
+/* ===== NUEVAS BARRAS DE PROGRESO DEL GRÁFICO 1 ===== */
+
+.progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.progress-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.progress-label-left {
+  min-width: 90px;
+  font-size: 0.95rem;
+  color: #e5e7ff;
+}
+
+.progress-bar {
+  position: relative;
+  flex: 1;
+  height: 28px;
+  border-radius: 999px;
+  background: #050716;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #a855f7, #c084fc);
+}
+
+.progress-bar-text {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+  padding-left: 12px;
+  font-size: 0.85rem;
+  color: #f9f7ff;
+  white-space: nowrap;
+}
+
+/* ===== RESPONSIVE ===== */
+
 @media (max-width: 900px) {
+  .filters-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .app-header {
+    border-radius: 22px;
+  }
+
+  .campos-grafico {
+    grid-column: 1 / -1;        /* ocupa toda la fila en tablets */
+  }
+
+  .field-button {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
   .charts-grid {
     grid-template-columns: 1fr;
   }
+}
+
+@media (max-width: 600px) {
+  .filters-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .field-button {
+    justify-content: flex-start;
+  }
+}
+
+/* ===== BOTONES EN LA TARJETA DE FILTROS ===== */
+.botones-filtros {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Campos de materias para gráfico alineados en columna */
+.campos-grafico input {
+  width: 100%;
 }
