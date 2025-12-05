@@ -25,7 +25,7 @@ const corsOptions = {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log('❌ CORS bloqueó origin:', origin);
+      console.log(' CORS bloqueó origin:', origin);
       callback(new Error('Not allowed by CORS'), false);
     }
   },
@@ -42,7 +42,7 @@ app.use('/api/carreras', carreraRoutes);
 app.use('/api/materias', materiaRoutes);
 
 app.get('/api-status', (req, res) => {
-  res.json({ ok: true, mensaje: 'API TECNM Retículas funcionando 🚀' });
+  res.json({ ok: true, mensaje: 'API TECNM Retículas funcionando ' });
 });
 
 // ----- Conexión MongoDB -----
@@ -57,10 +57,10 @@ if (!mongoUri) {
       dbName: 'tecnm_reticulas',
     })
     .then(() => {
-      console.log('✅ Conectado a MongoDB');
+      console.log(' Conectado a MongoDB');
     })
     .catch((err) => {
-      console.error('❌ Error conectando a MongoDB:', err);
+      console.error(' Error conectando a MongoDB:', err);
     });
 }
 
