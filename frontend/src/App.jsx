@@ -15,7 +15,7 @@ import {
   Cell,
 } from "recharts";
 
-// URL BASE  backend en Railway
+// URL BASE backend en Railway
 const API_BASE = `${API_URL}/api`;
 
 // Utilidad para llamar a la API
@@ -99,8 +99,8 @@ function App() {
     );
     const totalCarrerasResultados = carrerasEnResultados.size;
 
-    // Referencia: todas las carreras del Tec seleccionado,
-    // si no hay usamos las que aparecen en los resultados
+    // Referencia: todas las carreras del Tec seleccionado
+    // si no hay, usamos las que aparecen en los resultados
     const totalCarrerasReferencia =
       carreras.length > 0 ? carreras.length : totalCarrerasResultados || 1;
 
@@ -111,7 +111,6 @@ function App() {
         const nombreMateria = (m.nombre || "").toLowerCase();
         const textoBuscado = nom.toLowerCase().trim();
 
-        // contiene por nombre de materia
         if (nombreMateria.includes(textoBuscado)) {
           if (m.carrera?.nombre) {
             carrerasConMateria.add(m.carrera.nombre);
