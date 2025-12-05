@@ -10,6 +10,9 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts";
 
 // URL BASE  backend en Railway
@@ -32,6 +35,8 @@ const fetchJson = async (url, params = {}) => {
     return [];
   }
 };
+
+const COLORS = ["#22c55e", "#06b6d4", "#f97316", "#ef4444", "#a855f7", "#eab308"];
 
 function App() {
   const [tecs, setTecs] = useState([]);
@@ -89,10 +94,15 @@ function App() {
     }
 
     // Carreras distintas presentes en los resultados actuales
-    const carrerasTotales = new Set(
+    const carrerasEnResultados = new Set(
       base.map((m) => m.carrera?.nombre).filter(Boolean)
     );
-    const totalCarreras = carrerasTotales.size || 1;
+    const totalCarrerasResultados = carrerasEnResultados.size;
+
+    // Referencia: todas las carreras del Tec seleccionado.
+    // Si no hay, usamos las carreras presentes en los resultados.
+    const totalCarrerasReferencia =
+      carreras.length > 0 ? carreras.length : totalCarrerasResultados || 1;
 
     const datos = nombres.map((nom) => {
       const carrerasConMateria = new Set();
@@ -110,7 +120,7 @@ function App() {
       });
 
       const count = carrerasConMateria.size;
-      const porcentaje = (count / totalCarreras) * 100;
+      const porcentaje = (count / totalCarrerasReferencia) * 100;
 
       return {
         nombre: nom,
@@ -604,33 +614,95 @@ function App() {
           </p>
         ) : (
           <div className="charts-grid">
-            {/* Gráfica 1: Materias compartidas entre carreras */}
+            {/* Gráfica 1: Materias compartidas entre carreras (BARRA + PASTEL) */}
             {graficoDatos.length > 0 && (
               <div className="chart-card">
                 <h3>Distribución de materias en carreras (gráfico)</h3>
                 <p className="chart-subtitle">
-                  Porcentaje de carreras donde aparece cada materia escrita
-                  arriba.
+                  Número de carreras y proporción que representa cada materia.
                 </p>
 
-                <div className="progress-list">
-                  {graficoDatos.map((item) => (
-                    <div key={item.nombre} className="progress-row">
-                      <div className="progress-label-left">{item.nombre}</div>
-
-                      <div className="progress-bar">
-                        <div
-                          className="progress-bar-fill"
-                          style={{
-                            width: `${Math.min(item.porcentaje, 100)}%`,
+                <div className="chart-duo">
+                  {/* Barras */}
+                  <div className="chart-half">
+                    <ResponsiveContainer width="100%" height={220}>
+                      <BarChart
+                        data={graficoDatos}
+                        margin={{ top: 10, right: 10, left: 0, bottom: 40 }}
+                      >
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke="rgba(148, 163, 255, 0.3)"
+                        />
+                        <XAxis
+                          dataKey="nombre"
+                          stroke="#e5e7ff"
+                          tick={{ fill: "#e5e7ff", fontSize: 11 }}
+                          interval={0}
+                          angle={-20}
+                          textAnchor="end"
+                        />
+                        <YAxis
+                          stroke="#e5e7ff"
+                          tick={{ fill: "#e5e7ff", fontSize: 12 }}
+                          allowDecimals={false}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            background: "#050716",
+                            border: "1px solid #832eb4",
+                            borderRadius: 8,
+                            color: "#f8f7ff",
                           }}
                         />
-                        <span className="progress-bar-text">
-                          {item.count} carreras ({item.porcentaje.toFixed(1)}%)
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                        <Bar
+                          dataKey="count"
+                          name="Carreras"
+                          fill="#06b6d4"
+                          radius={[6, 6, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  {/* Pastel */}
+                  <div className="chart-half">
+                    <ResponsiveContainer width="100%" height={220}>
+                      <PieChart>
+                        <Pie
+                          data={graficoDatos}
+                          dataKey="count"
+                          nameKey="nombre"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          labelLine={false}
+                          label={({ name }) => name}
+                        >
+                          {graficoDatos.map((entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={COLORS[index % COLORS.length]}
+                            />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{
+                            background: "#050716",
+                            border: "1px solid #832eb4",
+                            borderRadius: 8,
+                            color: "#f8f7ff",
+                          }}
+                        />
+                        <Legend
+                          wrapperStyle={{
+                            color: "#e5e7ff",
+                            fontSize: 11,
+                          }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
               </div>
             )}
