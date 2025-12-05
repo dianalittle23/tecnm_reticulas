@@ -1,19 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { API_URL } from "./config";
 import "./App.css";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
 
 // URL BASE backend en Railway
 const API_BASE = `${API_URL}/api`;
@@ -36,8 +23,6 @@ const fetchJson = async (url, params = {}) => {
   }
 };
 
-const COLORS = ["#22c55e", "#06b6d4", "#f97316", "#ef4444", "#a855f7", "#eab308"];
-
 function App() {
   const [tecs, setTecs] = useState([]);
   const [carreras, setCarreras] = useState([]);
@@ -52,16 +37,9 @@ function App() {
 
   const [reticulaMaterias, setReticulaMaterias] = useState([]);
 
-  // Materias para gráfico 1
-  const [graficoMateria1, setGraficoMateria1] = useState("");
-  const [graficoMateria2, setGraficoMateria2] = useState("");
-  const [graficoMateria3, setGraficoMateria3] = useState("");
-  const [graficoDatos, setGraficoDatos] = useState([]);
-
   // refs para scroll
   const tablaRef = useRef(null);
   const reticulaRef = useRef(null);
-  const graficoRef = useRef(null);
 
   // Cargar tecs al iniciar
   useEffect(() => {
@@ -80,57 +58,6 @@ function App() {
     );
   }, [filtroTec]);
 
-  // === CÁLCULO DEL GRÁFICO 1: materias compartidas entre carreras ===
-  const calcularGrafico = (materiasBase) => {
-    const base = materiasBase || materias;
-
-    const nombres = [graficoMateria1, graficoMateria2, graficoMateria3]
-      .map((n) => n.trim())
-      .filter(Boolean);
-
-    if (nombres.length === 0 || base.length === 0) {
-      setGraficoDatos([]);
-      return;
-    }
-
-    // Carreras distintas presentes en los resultados actuales
-    const carrerasEnResultados = new Set(
-      base.map((m) => m.carrera?.nombre).filter(Boolean)
-    );
-    const totalCarrerasResultados = carrerasEnResultados.size;
-
-    // Referencia: todas las carreras del Tec seleccionado
-    // si no hay, usamos las que aparecen en los resultados
-    const totalCarrerasReferencia =
-      carreras.length > 0 ? carreras.length : totalCarrerasResultados || 1;
-
-    const datos = nombres.map((nom) => {
-      const carrerasConMateria = new Set();
-
-      base.forEach((m) => {
-        const nombreMateria = (m.nombre || "").toLowerCase();
-        const textoBuscado = nom.toLowerCase().trim();
-
-        if (nombreMateria.includes(textoBuscado)) {
-          if (m.carrera?.nombre) {
-            carrerasConMateria.add(m.carrera.nombre);
-          }
-        }
-      });
-
-      const count = carrerasConMateria.size;
-      const porcentaje = (count / totalCarrerasReferencia) * 100;
-
-      return {
-        nombre: nom,
-        count,
-        porcentaje,
-      };
-    });
-
-    setGraficoDatos(datos);
-  };
-
   // Buscar materias para la tabla
   const buscarMaterias = () => {
     const params = {};
@@ -143,7 +70,6 @@ function App() {
 
     fetchJson(`${API_BASE}/materias`, params).then((data) => {
       setMaterias(data);
-      calcularGrafico(data); // actualiza la gráfica 1 con los nuevos resultados
 
       if (tablaRef.current) {
         tablaRef.current.scrollIntoView({
@@ -152,16 +78,6 @@ function App() {
         });
       }
     });
-  };
-
-  const handleVerGrafico = () => {
-    calcularGrafico();
-    if (graficoRef.current) {
-      graficoRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }
   };
 
   // Cargar TODAS las materias de la carrera seleccionada (retícula)
@@ -227,39 +143,6 @@ function App() {
     });
     return map;
   }, [materiasEspecialidad]);
-
-  // Datos para gráfica 2: créditos totales por semestre
-  const datosCreditosPorSemestre = useMemo(() => {
-    if (!materias.length) return [];
-    const map = {};
-    materias.forEach((m) => {
-      const sem = m.semestre_recomendado ?? "Sin semestre";
-      const clave = isNaN(Number(sem)) ? String(sem) : Number(sem);
-      const creditos = Number(m.creditos) || 0;
-      map[clave] = (map[clave] || 0) + creditos;
-    });
-
-    return Object.entries(map)
-      .sort(([a], [b]) => Number(a) - Number(b))
-      .map(([semestre, totalCreditos]) => ({
-        semestre: String(semestre),
-        totalCreditos,
-      }));
-  }, [materias]);
-
-  // Datos para gráfica 3: número de materias por estado
-  const datosMateriasPorEstado = useMemo(() => {
-    if (!materias.length) return [];
-    const map = {};
-    materias.forEach((m) => {
-      const estado = m.tec?.estado || "Sin estado";
-      map[estado] = (map[estado] || 0) + 1;
-    });
-
-    return Object.entries(map)
-      .sort(([, a], [, b]) => b - a)
-      .map(([estado, totalMaterias]) => ({ estado, totalMaterias }));
-  }, [materias]);
 
   // Scroll a especialidad cuando se marca la casilla
   useEffect(() => {
@@ -388,31 +271,6 @@ function App() {
             </div>
           </div>
 
-          {/* MATERIAS PARA GRÁFICO */}
-          <div className="campos-grafico">
-            <label>
-              <strong>Materias para gráfico</strong>
-            </label>
-            <input
-              type="text"
-              value={graficoMateria1}
-              onChange={(e) => setGraficoMateria1(e.target.value)}
-              placeholder="Materia 1 (obligatoria)"
-            />
-            <input
-              type="text"
-              value={graficoMateria2}
-              onChange={(e) => setGraficoMateria2(e.target.value)}
-              placeholder="Materia 2 (obligatoria)"
-            />
-            <input
-              type="text"
-              value={graficoMateria3}
-              onChange={(e) => setGraficoMateria3(e.target.value)}
-              placeholder="Materia 3 (opcional)"
-            />
-          </div>
-
           {/* BOTONES */}
           <div className="field-button botones-filtros">
             <button className="primary-button" onClick={buscarMaterias}>
@@ -436,14 +294,6 @@ function App() {
               }}
             >
               Ver retícula
-            </button>
-
-            <button
-              className="primary-button"
-              type="button"
-              onClick={handleVerGrafico}
-            >
-              Ver gráfico
             </button>
           </div>
         </div>
@@ -598,219 +448,6 @@ function App() {
             </tbody>
           </table>
         </div>
-      </section>
-
-      {/* PANEL DE GRÁFICAS (tipo Power BI) */}
-      <section className="grafica-section" ref={graficoRef}>
-        <h2 className="section-title">Análisis de materias y créditos</h2>
-
-        {materias.length === 0 ? (
-          <p className="empty-text">
-            Primero realiza una búsqueda. Las gráficas se actualizarán en tiempo
-            real según los resultados y las materias que escribas en “Materias
-            para gráfico”.
-          </p>
-        ) : (
-          <div className="charts-grid">
-            {/* Gráfica 1: Materias compartidas entre carreras (BARRA + PASTEL) */}
-            {graficoDatos.length > 0 && (
-              <div className="chart-card">
-                <h3>Distribución de materias en carreras (gráfico)</h3>
-                <p className="chart-subtitle">
-                  Número de carreras y proporción que representa cada materia.
-                </p>
-
-                <div className="chart-duo">
-                  {/* Barras */}
-                  <div className="chart-half">
-                    <ResponsiveContainer width="100%" height={220}>
-                      <BarChart
-                        data={graficoDatos}
-                        margin={{ top: 10, right: 10, left: 0, bottom: 40 }}
-                      >
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          stroke="rgba(148, 163, 255, 0.3)"
-                        />
-                        <XAxis
-                          dataKey="nombre"
-                          stroke="#e5e7ff"
-                          tick={{ fill: "#e5e7ff", fontSize: 11 }}
-                          interval={0}
-                          angle={-20}
-                          textAnchor="end"
-                        />
-                        <YAxis
-                          stroke="#e5e7ff"
-                          tick={{ fill: "#e5e7ff", fontSize: 12 }}
-                          allowDecimals={false}
-                        />
-                        <Tooltip
-                          contentStyle={{
-                            background: "#050716",
-                            border: "1px solid #832eb4",
-                            borderRadius: 8,
-                            color: "#f8f7ff",
-                          }}
-                        />
-                        <Bar
-                          dataKey="count"
-                          name="Carreras"
-                          fill="#06b6d4"
-                          radius={[6, 6, 0, 0]}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-
-                  {/* Pastel */}
-                  <div className="chart-half">
-                    <ResponsiveContainer width="100%" height={220}>
-                      <PieChart>
-                        <Pie
-                          data={graficoDatos}
-                          dataKey="count"
-                          nameKey="nombre"
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          labelLine={false}
-                          label={({ name }) => name}
-                        >
-                          {graficoDatos.map((entry, index) => (
-                            <Cell
-                              key={`cell-${index}`}
-                              fill={COLORS[index % COLORS.length]}
-                            />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                          contentStyle={{
-                            background: "#050716",
-                            border: "1px solid #832eb4",
-                            borderRadius: 8,
-                            color: "#f8f7ff",
-                          }}
-                        />
-                        <Legend
-                          wrapperStyle={{
-                            color: "#e5e7ff",
-                            fontSize: 11,
-                          }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Gráfica 2: Créditos totales por semestre */}
-            {datosCreditosPorSemestre.length > 0 && (
-              <div className="chart-card">
-                <h3>Créditos totales por semestre</h3>
-                <p className="chart-subtitle">
-                  Suma de créditos de las materias encontradas en cada semestre.
-                </p>
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart
-                    data={datosCreditosPorSemestre}
-                    margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke="rgba(148, 163, 255, 0.3)"
-                    />
-                    <XAxis
-                      dataKey="semestre"
-                      stroke="#e5e7ff"
-                      tick={{ fill: "#e5e7ff", fontSize: 12 }}
-                      label={{
-                        value: "Semestre",
-                        position: "insideBottom",
-                        offset: -8,
-                        fill: "#e5e7ff",
-                        fontSize: 11,
-                      }}
-                    />
-                    <YAxis
-                      stroke="#e5e7ff"
-                      tick={{ fill: "#e5e7ff", fontSize: 12 }}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        background: "#050716",
-                        border: "1px solid #832eb4",
-                        borderRadius: 8,
-                        color: "#f8f7ff",
-                      }}
-                    />
-                    <Bar
-                      dataKey="totalCreditos"
-                      name="Créditos"
-                      fill="#6366f1"
-                      radius={[6, 6, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-
-            {/* Gráfica 3: Materias por estado */}
-            {datosMateriasPorEstado.length > 0 && (
-              <div className="chart-card">
-                <h3>Materias encontradas por estado</h3>
-                <p className="chart-subtitle">
-                  Cantidad de materias (filas de la tabla) asociadas a cada
-                  estado.
-                </p>
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart
-                    data={datosMateriasPorEstado}
-                    margin={{ top: 10, right: 20, left: 10, bottom: 60 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke="rgba(148, 163, 255, 0.3)"
-                    />
-                    <XAxis
-                      dataKey="estado"
-                      stroke="#e5e7ff"
-                      tick={{ fill: "#e5e7ff", fontSize: 11 }}
-                      interval={0}
-                      angle={-25}
-                      textAnchor="end"
-                    />
-                    <YAxis
-                      stroke="#e5e7ff"
-                      tick={{ fill: "#e5e7ff", fontSize: 12 }}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        background: "#050716",
-                        border: "1px solid #832eb4",
-                        borderRadius: 8,
-                        color: "#f8f7ff",
-                      }}
-                    />
-                    <Legend
-                      wrapperStyle={{
-                        color: "#e5e7ff",
-                        fontSize: 11,
-                      }}
-                    />
-                    <Bar
-                      dataKey="totalMaterias"
-                      name="Materias"
-                      fill="#ec4899"
-                      radius={[6, 6, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-          </div>
-        )}
       </section>
     </div>
   );
